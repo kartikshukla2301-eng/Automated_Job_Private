@@ -13,5 +13,11 @@
 - Added Python package initializers (`__init__.py`) with descriptive module docstrings.
 - Added root `AGENTS.md` for persistent Antigravity instructions.
 - Hardened `.gitignore` to safeguard secrets, browser sessions, caches, and test outputs.
+- Created Python 3.13 virtual environment (`.venv`) at project root.
+- Created `requirements.txt` with pinned dependencies for FastAPI, Pydantic, Playwright, and Pytest.
+- Installed Playwright package and installed Chromium (v1248) + Chrome Headless Shell.
+- Implemented minimal FastAPI foundation in `services/api` (`main.py`, `config.py`, `schemas.py`) with `GET /health` endpoint.
+- Implemented automated test suite in `tests/test_health.py` and `tests/test_config.py` (6/6 tests passing).
+
 
 

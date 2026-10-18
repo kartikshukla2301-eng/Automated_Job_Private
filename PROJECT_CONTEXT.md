@@ -48,20 +48,23 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Production build (`npm run build`), lint (`npm run lint`), and tests (`npm test`) fully verified passing.
 - Phase 0.1 complete: Git repository initialized at root, hardened `.gitignore`, persistent root `AGENTS.md` instructions added.
 - Planned repository structure established (`services/api/`, `worker/core/`, `worker/profile/`, `worker/providers/`, `worker/sessions/`, `config/`, `migrations/`, `fixtures/forms/`, `tests/`) with package initializers.
+- Phase 0.2 complete: Python 3.13 `.venv` created, `requirements.txt` pinned and installed, Playwright Chromium installed.
+- FastAPI backend foundation implemented in `services/api` (`main.py`, `config.py`, `schemas.py`) with `GET /health` endpoint.
+- Automated test suite in `tests/` verifying health and configuration validation (6/6 tests passing).
 
 ### In progress
-- Phase 0.2: Python virtual environment creation (`.venv`) using Python 3.13 and baseline backend dependencies.
+- Phase 0.3: Core runtime configuration loader (`config.yaml`), structured logging, and LocalFileProfileSource.
 
 ### Unverified / pending
 - Supabase project and credentials.
 - Current OpenRouter model IDs and pricing.
-- Backend FastAPI and worker application code.
+- Worker core engine and Greenhouse adapter.
 
 ## Next steps
-1. Create Python virtual environment (`.venv`) using Python 3.13 and install backend dependencies (FastAPI, Pydantic, Playwright, pytest).
-2. Implement Phase 0 backend foundation (config loader, structured logging, Supabase schema v1, LocalFileProfileSource).
-3. Implement persisted kill switch and caps with unit tests.
-4. Implement Greenhouse dry-run walking skeleton (real submit disabled).
+1. Implement runtime configuration loader (`config/config.yaml`) based on Appendix B and structured logging.
+2. Implement LocalFileProfileSource (`worker/profile/source.py`, `localfile.py`, `fixtures/profile.yaml`).
+3. Implement persisted kill switch and caps with unit tests (`worker/core/caps.py`, `kill_switch.py`).
+4. Implement Greenhouse dry-run walking skeleton (`worker/providers/greenhouse.py`).
 
 ## End-of-session handoff template
 - Task and date/time
