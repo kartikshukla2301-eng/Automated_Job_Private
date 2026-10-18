@@ -22,6 +22,11 @@
 - Implemented structured JSON logging with UTC ISO-8601 timestamps, log level, service identifier, request correlation ID, safe exception formatting, and recursive secret redaction filter (`services/api/logging_config.py`).
 - Added `RequestCorrelationMiddleware` on FastAPI with strict validation of `X-Request-ID` (`^[a-zA-Z0-9_\-]{1,64}$`), fallback to UUID4, header propagation, and structured HTTP access logging.
 - Expanded backend test suite to 18 passing tests covering YAML parsing, configuration precedence, out-of-bounds validation, secret scrubbing, log formatting, setup idempotency, and request ID behavior.
+- Phase 0.4: Implemented strongly typed candidate profile models (`EducationEntry`, `ExperienceEntry`, `SkillEntry`, `ProjectEntry`, `CandidateDetails`, `CandidatePreferences`, `ProfileSnapshot`) with strict validation in `worker/profile/models.py`.
+- Defined `ProfileSource` Protocol abstraction in `worker/profile/source.py` decoupling worker engines from profile storage.
+- Implemented `LocalFileProfileSource` in `worker/profile/localfile.py` with typed exceptions (`ProfileNotFoundError`, `ProfileParseError`, `ProfileValidationError`) and deterministic SHA256 version calculation.
+- Added non-canonical placeholder fixture in `fixtures/profile.yaml` with clear testing disclaimers.
+- Expanded backend test suite to 29 passing tests covering model validation, YAML parsing errors, missing files, extra field rejection, and deterministic profile versioning.
 
 
 

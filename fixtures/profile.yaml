@@ -1,0 +1,79 @@
+# ==============================================================================
+# CANDIDATE PROFILE FIXTURE TEMPLATE (NON-CANONICAL / TESTING ONLY)
+# ==============================================================================
+# WARNING: This file contains synthetic placeholder data for testing, local
+# bootstrap, and schema verification. It does NOT contain real candidate facts,
+# credentials, or personal identity details.
+#
+# Replace placeholder values with verified candidate data when configuring
+# a local profile for personal use.
+# ==============================================================================
+
+schema_version: 1
+profile_version: "template-v1.0.0"
+synced_at: "2026-10-18T00:00:00Z"
+
+candidate:
+  name: "Candidate Name Placeholder"
+  email: "candidate.placeholder@example.com"
+  phone: "+1-555-0100"
+  location: "Bengaluru, India"
+  education:
+    - institution: "Example Institute of Technology"
+      degree: "Bachelor of Technology"
+      field_of_study: "Computer Science and Engineering"
+      start_date: "2020-08"
+      end_date: "2024-05"
+      grade: "8.5 / 10.0"
+  experience:
+    - company: "Example Software Labs"
+      title: "Software Engineer"
+      location: "Bengaluru, India"
+      start_date: "2024-06"
+      end_date: null
+      is_current: true
+      description: "Backend API and distributed systems development."
+      highlights:
+        - "Built scalable RESTful services using Python and FastAPI."
+        - "Maintained asynchronous data ingestion pipelines."
+  skills:
+    - name: "Python"
+      years: 3.0
+    - name: "FastAPI"
+      years: 2.0
+    - name: "PostgreSQL"
+      years: 2.0
+    - name: "TypeScript"
+      years: 1.5
+    - name: "Docker"
+      years: 1.0
+  projects:
+    - title: "Personal Job Automation Assistant"
+      description: "Human-in-the-loop application assistant built with Next.js, FastAPI, and Playwright."
+      technologies:
+        - "Python"
+        - "FastAPI"
+        - "Playwright"
+        - "TypeScript"
+      link: "https://github.com/example/job-agent"
+  links:
+    github: "https://github.com/example-candidate"
+    linkedin: "https://linkedin.com/in/example-candidate"
+    portfolio: "https://example-candidate.dev"
+
+preferences:
+  roles:
+    - "Software Engineer"
+    - "Backend Engineer"
+    - "Full Stack Engineer"
+  locations:
+    - "Bengaluru"
+    - "Remote"
+    - "Hyderabad"
+  work_modes:
+    - "remote"
+    - "hybrid"
+  levels:
+    - "entry"
+    - "junior"
+    - "mid"
