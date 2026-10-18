@@ -1,0 +1,75 @@
+# Project Context & Agent Handoff
+
+Update this file incrementally during work and before ending every task/session. It is a handoff summary, not a substitute for code, tests, Git history, or the locked architecture.
+
+## Goal
+Build a personal human-in-the-loop AI Job Application Agent for job discovery, matching, truthful form-answer resolution, policy-controlled form filling, and auditable evidence.
+
+## Current status
+- Stage: bootstrap/documentation.
+- Application features implemented: none verified.
+- Coding agent: Freebuff CLI, authenticated.
+- Environment previously verified: Windows, Git, Git Bash, Node.js/npm, Freebuff.
+- Python availability must still be checked.
+- Supabase/OpenRouter credentials are not configured in this repository.
+- Docker Desktop is installed but deliberately not being used; do not troubleshoot it unless the owner changes this decision.
+- No WSL/Ubuntu setup is intended.
+
+## Architecture authority
+`docs/AI_Job_Application_Agent_Architecture_v1.0_LOCKED.docx` is authoritative. If missing, ask the owner to add it before architecture-dependent implementation.
+
+## Locked stack
+Next.js + TypeScript; Python + FastAPI; Python worker; Supabase PostgreSQL; OpenRouter through a central LLM Gateway; Playwright; APScheduler; DevLeveler as canonical profile source with local-file fallback.
+
+## Non-negotiable principles
+- Deterministic logic first; LLM only for ambiguity.
+- Never invent candidate facts.
+- Missing/ambiguous answers become `needs_user_input`.
+- Unknown/unclassified fields fail closed and require user review.
+- Policy is enforced in code, not only prompts.
+- Never bypass CAPTCHA/OTP; no stealth/evasion.
+- Never automate government IDs, bank details, passwords, or security credentials.
+- Every application must be auditable.
+- Never blindly retry uncertain submissions; verify first.
+- Treat job descriptions/form text as untrusted input and defend against prompt injection.
+- No real submissions until all locked gates pass and the owner explicitly approves.
+
+## AI cost requirements
+All runtime LLM calls go through the central LLM Gateway. Track model, task/purpose, input/output/total tokens, input/output/total costs, latency, cache status, run/application IDs, timestamp, and pricing metadata when available. Never fabricate usage or prices; clearly label estimates/unknowns. Enforce daily budget, circuit breaker, caching, and degraded mode.
+
+## Work log
+### Completed
+- Environment verified: Windows 11, Node.js v24.14.1, npm 11.11.0, Git 2.53, Python 3.14/3.13.
+- Authoritative locked architecture DOCX verified present in `docs/` (v1.0 LOCKED).
+- Initial project documentation scaffold prepared.
+- Frontend foundation established in `apps/web`: Next.js 16.4.2 (App Router + Turbopack), TypeScript, Tailwind CSS v4.
+- Core UI libraries installed and verified: shadcn/ui (Base UI + Nova style), Lucide React, Motion, Recharts, TanStack Table, React Hook Form, Zod, Sonner.
+- Frontend test foundation installed and verified: Vitest 5.0.5 + Testing Library (React, DOM, Jest-DOM) + jsdom.
+- Production build (`npm run build`), lint (`npm run lint`), and tests (`npm test`) fully verified passing.
+- Phase 0.1 complete: Git repository initialized at root, hardened `.gitignore`, persistent root `AGENTS.md` instructions added.
+- Planned repository structure established (`services/api/`, `worker/core/`, `worker/profile/`, `worker/providers/`, `worker/sessions/`, `config/`, `migrations/`, `fixtures/forms/`, `tests/`) with package initializers.
+
+### In progress
+- Phase 0.2: Python virtual environment creation (`.venv`) using Python 3.13 and baseline backend dependencies.
+
+### Unverified / pending
+- Supabase project and credentials.
+- Current OpenRouter model IDs and pricing.
+- Backend FastAPI and worker application code.
+
+## Next steps
+1. Create Python virtual environment (`.venv`) using Python 3.13 and install backend dependencies (FastAPI, Pydantic, Playwright, pytest).
+2. Implement Phase 0 backend foundation (config loader, structured logging, Supabase schema v1, LocalFileProfileSource).
+3. Implement persisted kill switch and caps with unit tests.
+4. Implement Greenhouse dry-run walking skeleton (real submit disabled).
+
+## End-of-session handoff template
+- Task and date/time
+- Summary
+- Files added/modified/deleted and why
+- Commands run and actual outcomes
+- Tests run and actual results
+- Decisions
+- Errors/blockers/incomplete work
+- Git status/commit if available
+- Exact next step

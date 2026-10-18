@@ -1,0 +1,49 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node & Next.js
+node_modules/
+.next/
+dist/
+out/
+build/
+coverage/
+*.tsbuildinfo
+
+# Local browser/session state & Playwright
+worker/sessions/*
+!worker/sessions/.gitkeep
+playwright/.auth/
+playwright-report/
+test-results/
+.storage/
+*.sqlite3
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+*.swp
+*.tmp
+
+# Logs/artifacts
+*.log
+artifacts/
+screenshots/
+
