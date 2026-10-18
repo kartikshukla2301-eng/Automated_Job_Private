@@ -27,6 +27,12 @@
 - Implemented `LocalFileProfileSource` in `worker/profile/localfile.py` with typed exceptions (`ProfileNotFoundError`, `ProfileParseError`, `ProfileValidationError`) and deterministic SHA256 version calculation.
 - Added non-canonical placeholder fixture in `fixtures/profile.yaml` with clear testing disclaimers.
 - Expanded backend test suite to 29 passing tests covering model validation, YAML parsing errors, missing files, extra field rejection, and deterministic profile versioning.
+- Phase 0.5: Implemented the Safety Engine with Kill Switch and Application Caps in `worker/core/`.
+- Created typed safety and barrier exceptions in `worker/core/exceptions.py` (`SafetyBlockedError`, `KillSwitchActiveError`, `InvalidSafetyStateError`, `CapExceededError`, `GlobalDailyCapExceededError`, `ProviderDailyCapExceededError`, `CompanyDailyCapExceededError`, `CompanyCooldownExceededError`, `RealSubmitGateBlockedError`).
+- Implemented `KillSwitch` Protocol along with `InMemoryKillSwitch` and `FileKillSwitch` in `worker/core/kill_switch.py` with fail-closed behavior on missing or corrupt state files.
+- Implemented `ApplicationLedger` Protocol, `FileApplicationLedger` (append-only JSONL), and `CapsEnforcer` in `worker/core/caps.py` enforcing global daily ceilings, provider daily ceilings, company 24-hour limits, and company 30-day cooldowns.
+- Created `SafetyEngine` in `worker/core/safety.py` establishing an explicit pre-application execution barrier coordinating the kill switch, caps enforcer, and locked real-submit gate.
+- Expanded backend test suite to 42 passing tests (`tests/test_safety.py`).
 
 
 

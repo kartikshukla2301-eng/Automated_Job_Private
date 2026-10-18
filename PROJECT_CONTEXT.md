@@ -57,10 +57,13 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Phase 0.4 complete: Candidate profile models (`worker/profile/models.py`), `ProfileSource` protocol abstraction (`worker/profile/source.py`), and `LocalFileProfileSource` (`worker/profile/localfile.py`) with deterministic SHA256 version calculation.
 - Added non-canonical placeholder fixture (`fixtures/profile.yaml`) and typed exceptions (`worker/profile/exceptions.py`).
 - Automated backend test suite expanded to 29 passing tests (`tests/test_profile.py`).
+- Phase 0.5 complete: Safety Engine (`worker/core/safety.py`) with Kill Switch (`worker/core/kill_switch.py`) and Application Caps (`worker/core/caps.py`).
+- Implemented typed safety exceptions (`worker/core/exceptions.py`), fail-closed file-persisted kill switch (`FileKillSwitch`), durable JSONL application ledger (`FileApplicationLedger`), rate caps enforcer (`CapsEnforcer`), and real-submit gate barrier.
+- Automated backend test suite expanded to 42 passing tests (`tests/test_safety.py`).
 - Frontend test suite (Vitest) verified passing (2 tests).
 
 ### In progress
-- None (Phase 0.4 complete).
+- None (Phase 0.5 complete).
 
 ### Unverified / pending
 - Supabase project and credentials.
@@ -68,8 +71,7 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Worker core engine and Greenhouse adapter.
 
 ## Next steps
-1. Phase 0.5: Implement persisted kill switch and caps with unit tests (`worker/core/caps.py`, `kill_switch.py`).
-2. Phase 0.6: Implement Greenhouse dry-run walking skeleton (`worker/providers/greenhouse.py`).
+1. Phase 0.6: Implement Greenhouse dry-run walking skeleton (`worker/providers/greenhouse.py`).
 
 ## End-of-session handoff template
 - Task and date/time

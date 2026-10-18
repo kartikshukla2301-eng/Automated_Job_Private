@@ -13,6 +13,6 @@ Statuses: NOT_STARTED, IN_PROGRESS, BLOCKED, DONE, NEEDS_REVIEW.
 | T-007 | FastAPI backend foundation | DONE | App factory, GET /health, pydantic-settings config, test suite (6/6 passing) |
 | T-007b | Centralized config & structured logging (Phase 0.3) | DONE | config/config.yaml + pydantic-settings precedence, structured JSON logging, correlation middleware, 18 backend tests passing |
 | T-007c | Candidate ProfileSource & Local YAML Profile (Phase 0.4) | DONE | Profile models, ProfileSource protocol, LocalFileProfileSource, fixtures/profile.yaml, 29 backend tests passing |
-| T-008 | Kill switch and caps | NOT_STARTED | Tests prove caps and kill switch fail safely |
+| T-008 | Kill switch and caps (Phase 0.5) | DONE | KillSwitch (File/InMemory), CapsEnforcer, SafetyEngine, 42 backend tests passing proving fail-closed safety |
 | T-009 | LLM Gateway and costing | NOT_STARTED | Input/output usage/cost tracked honestly |
 | T-010 | Greenhouse dry-run skeleton | NOT_STARTED | Inspect/fill/evidence/event trail; no real submission |
