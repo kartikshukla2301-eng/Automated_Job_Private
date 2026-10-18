@@ -18,5 +18,7 @@ The locked architecture DOCX is authoritative. This file is only a quick referen
 - Supabase service-role key stays in FastAPI; never in frontend or worker.
 - Browser sessions remain local and outside cloud-synced folders.
 - Start at L0 dry-run; real submissions require all locked gates and explicit owner approval.
+- Safety execution boundary: all provider form filling, dry-run navigation, and submission attempts must pass through a central runner that calls `SafetyEngine.verify_pre_apply()` before any browser interaction. Direct invocation of provider browser actions without prior safety clearance is forbidden.
+- Real-Submit Gate remains hard-coded as disabled until all criteria in Architecture v1.0 LOCKED line 683 are formally met.
 
 Planned components: `apps/web`, `services/api`, `worker/core`, `worker/providers`, `worker/profile`, `worker/sessions`, `migrations`, `fixtures/forms`, `tests`.

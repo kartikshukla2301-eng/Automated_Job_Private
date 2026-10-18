@@ -32,7 +32,4 @@
 - Implemented `KillSwitch` Protocol along with `InMemoryKillSwitch` and `FileKillSwitch` in `worker/core/kill_switch.py` with fail-closed behavior on missing or corrupt state files.
 - Implemented `ApplicationLedger` Protocol, `FileApplicationLedger` (append-only JSONL), and `CapsEnforcer` in `worker/core/caps.py` enforcing global daily ceilings, provider daily ceilings, company 24-hour limits, and company 30-day cooldowns.
 - Created `SafetyEngine` in `worker/core/safety.py` establishing an explicit pre-application execution barrier coordinating the kill switch, caps enforcer, and locked real-submit gate.
-- Expanded backend test suite to 42 passing tests (`tests/test_safety.py`).
-
-
-
+- Post-Audit Corrections: Added in-process thread concurrency locks (`threading.Lock`) to `FileApplicationLedger` and `FileKillSwitch` protecting writes and reads against partial/interleaved records.

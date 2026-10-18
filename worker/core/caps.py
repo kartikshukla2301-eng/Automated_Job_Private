@@ -1,6 +1,7 @@
 """Application rate caps enforcement and accounting ledger."""
 
 import json
+import threading
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, List, Optional, Protocol, Union
@@ -78,33 +79,44 @@ class FileApplicationLedger:
     """Durable append-only JSON Lines ledger for application history.
 
     Survives process restarts to prevent daily and cooldown cap resets.
+
+    CONCURRENCY & PERSISTENCE GUARANTEES:
+    - Thread-safe within a single process via an internal threading.Lock.
+    - Readers and writers synchronize under the lock, preventing readers from
+      observing partially written lines or interleaved writes within the process.
+    - LIMITATION: Does NOT provide cross-process OS file locks across separate
+      OS processes. The Job Agent architecture specifies a single dedicated
+      local worker process per host.
     """
 
     def __init__(self, file_path: Union[str, Path]) -> None:
         self.file_path = Path(file_path)
+        self._lock = threading.Lock()
 
     def record_submission(self, record: ApplicationRecord) -> None:
-        self.file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.file_path, "a", encoding="utf-8") as f:
-            f.write(record.model_dump_json() + "\n")
+        with self._lock:
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.file_path, "a", encoding="utf-8") as f:
+                f.write(record.model_dump_json() + "\n")
 
     def _read_all_records(self) -> List[ApplicationRecord]:
-        if not self.file_path.exists():
-            return []
+        with self._lock:
+            if not self.file_path.exists():
+                return []
 
-        records = []
-        with open(self.file_path, "r", encoding="utf-8") as f:
-            for line_no, line in enumerate(f, start=1):
-                clean = line.strip()
-                if not clean:
-                    continue
-                try:
-                    records.append(ApplicationRecord.model_validate_json(clean))
-                except Exception as exc:
-                    raise InvalidSafetyStateError(
-                        f"Corrupted ledger entry at line {line_no} in '{self.file_path}': {exc}"
-                    ) from exc
-        return records
+            records = []
+            with open(self.file_path, "r", encoding="utf-8") as f:
+                for line_no, line in enumerate(f, start=1):
+                    clean = line.strip()
+                    if not clean:
+                        continue
+                    try:
+                        records.append(ApplicationRecord.model_validate_json(clean))
+                    except Exception as exc:
+                        raise InvalidSafetyStateError(
+                            f"Corrupted ledger entry at line {line_no} in '{self.file_path}': {exc}"
+                        ) from exc
+            return records
 
     def count_daily_applications(self, target_date: date, provider: Optional[str] = None) -> int:
         records = self._read_all_records()

@@ -15,3 +15,9 @@ Freebuff is the development agent. The application runtime uses OpenRouter throu
 ## AD-004 — Mandatory project handoff
 Status: Accepted.
 Maintain `PROJECT_CONTEXT.md`, task tracker, changelog, architecture reference and build rules. Every agent verifies them against code and Git before continuing.
+
+## AD-005 — Daily application caps accounting timezone
+Status: Proposed / Awaiting Owner Approval.
+- Context: Appendix B defines `schedule.timezone: Asia/Kolkata` with `active_hours: "09:00-23:00"`, while initial Phase 0.5 daily caps accounting evaluates calendar dates against `timezone.utc`.
+- Proposal: Daily rate cap accounting should evaluate calendar days using the configured `schedule.timezone` (`Asia/Kolkata`) so daily counters reset at local midnight rather than UTC midnight (05:30 AM IST).
+- Constraint: Until approved and verified with boundary tests across midnight, accounting remains UTC-based.

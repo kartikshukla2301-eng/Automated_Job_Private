@@ -1,6 +1,7 @@
 """Kill switch abstraction and state implementations enforcing fail-closed safety."""
 
 import json
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Protocol, Union
@@ -91,34 +92,43 @@ class FileKillSwitch:
 
     SAFETY RULE: Defaults to fail-closed. If the state file is missing,
     corrupted, or unreadable, automation is strictly treated as disabled.
+
+    CONCURRENCY GUARANTEES:
+    - Thread-safe within a single process via an internal threading.Lock.
+    - Uses atomic replacement (tmp file rename) so external readers never observe
+      partial writes.
+    - LIMITATION: Designed for single-worker host environments per Architecture v1.0.
     """
 
     def __init__(self, file_path: Union[str, Path]) -> None:
         self.file_path = Path(file_path)
+        self._lock = threading.Lock()
 
     def _read_record(self) -> KillSwitchRecord:
         """Read and validate the record from disk; fail-closed on any error."""
-        if not self.file_path.exists():
-            raise InvalidSafetyStateError(
-                f"Kill switch state file missing at '{self.file_path}'. Failing closed."
-            )
+        with self._lock:
+            if not self.file_path.exists():
+                raise InvalidSafetyStateError(
+                    f"Kill switch state file missing at '{self.file_path}'. Failing closed."
+                )
 
-        try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            return KillSwitchRecord.model_validate(raw_data)
-        except Exception as exc:
-            raise InvalidSafetyStateError(
-                f"Kill switch state file corrupted or unreadable at '{self.file_path}': {exc}. Failing closed."
-            ) from exc
+            try:
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                return KillSwitchRecord.model_validate(raw_data)
+            except Exception as exc:
+                raise InvalidSafetyStateError(
+                    f"Kill switch state file corrupted or unreadable at '{self.file_path}': {exc}. Failing closed."
+                ) from exc
 
     def _write_record(self, record: KillSwitchRecord) -> None:
         """Persist state atomically."""
-        self.file_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = self.file_path.with_suffix(".tmp")
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            f.write(record.model_dump_json(indent=2))
-        tmp_path.replace(self.file_path)
+        with self._lock:
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = self.file_path.with_suffix(".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                f.write(record.model_dump_json(indent=2))
+            tmp_path.replace(self.file_path)
 
     def is_automation_enabled(self) -> bool:
         """Check whether automation is allowed; returns False if file is invalid."""

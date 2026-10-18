@@ -59,7 +59,7 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Automated backend test suite expanded to 29 passing tests (`tests/test_profile.py`).
 - Phase 0.5 complete: Safety Engine (`worker/core/safety.py`) with Kill Switch (`worker/core/kill_switch.py`) and Application Caps (`worker/core/caps.py`).
 - Implemented typed safety exceptions (`worker/core/exceptions.py`), fail-closed file-persisted kill switch (`FileKillSwitch`), durable JSONL application ledger (`FileApplicationLedger`), rate caps enforcer (`CapsEnforcer`), and real-submit gate barrier.
-- Automated backend test suite expanded to 42 passing tests (`tests/test_safety.py`).
+- Post-audit corrections: Thread-safe in-process concurrency locks added to `FileApplicationLedger` and `FileKillSwitch`; documented execution barrier contract and proposed timezone decision (AD-005).
 - Frontend test suite (Vitest) verified passing (2 tests).
 
 ### In progress

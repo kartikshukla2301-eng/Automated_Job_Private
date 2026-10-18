@@ -28,7 +28,17 @@ class SafetyDecision(BaseModel):
 
 
 class SafetyEngine:
-    """Pre-application safety barrier coordinating kill switch, caps, and real-submit gate."""
+    """Pre-application safety barrier coordinating kill switch, caps, and real-submit gate.
+
+    MANDATORY EXECUTION BOUNDARY CONTRACT (Architecture v1.0 LOCKED):
+    - All job execution code (including provider adapters such as Greenhouse/Lever)
+      must be mediated by a central runner that calls verify_pre_apply() before
+      initiating any form navigation, answer filling, or browser interaction.
+    - Direct invocation of browser automation without passing through this barrier
+      is strictly forbidden by architecture rules.
+    - Real job submissions are strictly locked (real_submit_gate_enabled=False)
+      until all locked gates in Section 13 (line 683) are formally validated.
+    """
 
     def __init__(
         self,

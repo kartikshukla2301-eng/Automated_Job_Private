@@ -286,3 +286,69 @@ def test_safety_engine_permits_valid_dry_run_within_caps(sample_caps_config: Cap
 
     # Does not raise
     engine.verify_pre_apply(company="Acme", provider="greenhouse", is_real_submit=False)
+
+
+# ---------------------------------------------------------------------------
+# CONCURRENCY AND THREAD-SAFETY TESTS
+# ---------------------------------------------------------------------------
+
+def test_file_application_ledger_multithreaded_concurrency(tmp_path: Path):
+    """Verify concurrent thread writes to FileApplicationLedger do not corrupt data."""
+    import concurrent.futures
+
+    ledger_file = tmp_path / "concurrent_ledger.jsonl"
+    ledger = FileApplicationLedger(ledger_file)
+    today = datetime.now(timezone.utc)
+
+    num_threads = 5
+    records_per_thread = 10
+
+    def worker_task(thread_id: int):
+        for i in range(records_per_thread):
+            record = ApplicationRecord(
+                id=f"thread-{thread_id}-{i}",
+                company=f"Company-{thread_id}",
+                provider="greenhouse",
+                applied_at=today,
+            )
+            ledger.record_submission(record)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = [executor.submit(worker_task, tid) for tid in range(num_threads)]
+        for f in concurrent.futures.as_completed(futures):
+            f.result()
+
+    # Total records should exactly equal num_threads * records_per_thread
+    total_written = ledger.count_daily_applications(today.date())
+    assert total_written == num_threads * records_per_thread
+
+    # Verify company counts per thread
+    for tid in range(num_threads):
+        assert ledger.count_company_applications_since(
+            f"Company-{tid}", since=today - timedelta(hours=1)
+        ) == records_per_thread
+
+
+def test_file_kill_switch_multithreaded_concurrency(tmp_path: Path):
+    """Verify concurrent thread interactions on FileKillSwitch do not corrupt state."""
+    import concurrent.futures
+
+    ks_file = tmp_path / "concurrent_ks.json"
+    ks = FileKillSwitch(ks_file)
+    ks.reset()
+
+    def trip_switch(tid: int):
+        ks.trip(reason=f"Trip from {tid}")
+        return ks.is_automation_enabled()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(trip_switch, i) for i in range(10)]
+        for f in concurrent.futures.as_completed(futures):
+            assert f.result() is False
+
+    assert ks.is_automation_enabled() is False
+    with pytest.raises(KillSwitchActiveError):
+        ks.verify_automation_allowed()
+
+    ks.reset()
+    assert ks.is_automation_enabled() is True
