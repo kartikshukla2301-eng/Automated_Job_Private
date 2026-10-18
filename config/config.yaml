@@ -1,0 +1,52 @@
+# AI Job Application Agent — Baseline Configuration
+# Based on Architecture v1.0 LOCKED Appendix B.
+# Non-secret development defaults. Keep all secrets exclusively in environment variables.
+
+autonomy:
+  default_level: "L0"
+  per_provider:
+    greenhouse: "L0"
+    lever: "L0"
+    naukri: "L0"
+    linkedin: "L0"
+
+caps:
+  global_per_day: 20
+  per_provider_per_day:
+    greenhouse: 15
+    lever: 15
+    naukri: 20
+    linkedin: 10
+  per_company_per_30d: 1
+  per_company_per_day: 2
+
+schedule:
+  timezone: "Asia/Kolkata"
+  active_hours: "09:00-23:00"
+  delay_seconds:
+    - 30
+    - 90
+
+matching:
+  threshold: 65
+  borderline_band:
+    - 55
+    - 70
+  max_job_age_hours: 24
+
+llm:
+  daily_call_budget: 400
+  chains:
+    unknown_question:
+      - "model_a"
+      - "model_b"
+
+approval:
+  expire_hours: 24
+
+retention:
+  screenshots_days: 60
+
+profile:
+  source: "local_file"
+  stale_after_days: 7

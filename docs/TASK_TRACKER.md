@@ -11,6 +11,7 @@ Statuses: NOT_STARTED, IN_PROGRESS, BLOCKED, DONE, NEEDS_REVIEW.
 | T-005 | Initialize Git & repo foundation | DONE | Git initialized at root, planned directory structure created, .gitignore verified |
 | T-006 | Frontend UI foundation & dependencies | DONE | Next.js 16, Tailwind v4, shadcn/ui, Motion, Recharts, TanStack Table, Hook Form, Zod, Sonner, Vitest |
 | T-007 | FastAPI backend foundation | DONE | App factory, GET /health, pydantic-settings config, test suite (6/6 passing) |
+| T-007b | Centralized config & structured logging (Phase 0.3) | DONE | config/config.yaml + pydantic-settings precedence, structured JSON logging, correlation middleware, 18 backend tests passing |
 | T-008 | Kill switch and caps | NOT_STARTED | Tests prove caps and kill switch fail safely |
 | T-009 | LLM Gateway and costing | NOT_STARTED | Input/output usage/cost tracked honestly |
 | T-010 | Greenhouse dry-run skeleton | NOT_STARTED | Inspect/fill/evidence/event trail; no real submission |

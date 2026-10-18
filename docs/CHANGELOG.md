@@ -16,8 +16,12 @@
 - Created Python 3.13 virtual environment (`.venv`) at project root.
 - Created `requirements.txt` with pinned dependencies for FastAPI, Pydantic, Playwright, and Pytest.
 - Installed Playwright package and installed Chromium (v1248) + Chrome Headless Shell.
-- Implemented minimal FastAPI foundation in `services/api` (`main.py`, `config.py`, `schemas.py`) with `GET /health` endpoint.
 - Implemented automated test suite in `tests/test_health.py` and `tests/test_config.py` (6/6 tests passing).
+- Phase 0.3: Centralized runtime configuration in `config/config.yaml` based on locked architecture Appendix B (`autonomy`, `caps`, `schedule`, `matching`, `llm`, `approval`, `retention`, `profile`).
+- Upgraded `services/api/config.py` with `pydantic-settings` supporting typed nested configurations, deterministic precedence (Init > Env vars > .env > YAML > Defaults), and bounds validation.
+- Implemented structured JSON logging with UTC ISO-8601 timestamps, log level, service identifier, request correlation ID, safe exception formatting, and recursive secret redaction filter (`services/api/logging_config.py`).
+- Added `RequestCorrelationMiddleware` on FastAPI with strict validation of `X-Request-ID` (`^[a-zA-Z0-9_\-]{1,64}$`), fallback to UUID4, header propagation, and structured HTTP access logging.
+- Expanded backend test suite to 18 passing tests covering YAML parsing, configuration precedence, out-of-bounds validation, secret scrubbing, log formatting, setup idempotency, and request ID behavior.
 
 
 
