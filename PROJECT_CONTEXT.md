@@ -60,18 +60,26 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Phase 0.5 complete: Safety Engine (`worker/core/safety.py`) with Kill Switch (`worker/core/kill_switch.py`) and Application Caps (`worker/core/caps.py`).
 - Implemented typed safety exceptions (`worker/core/exceptions.py`), fail-closed file-persisted kill switch (`FileKillSwitch`), durable JSONL application ledger (`FileApplicationLedger`), rate caps enforcer (`CapsEnforcer`), and real-submit gate barrier.
 - Post-audit corrections: Thread-safe in-process concurrency locks added to `FileApplicationLedger` and `FileKillSwitch`; documented execution barrier contract and proposed timezone decision (AD-005).
+- Phase 0.6 complete: Greenhouse Dry-Run Walking Skeleton and Central Execution Runner (`worker/core/runner.py`, `worker/providers/greenhouse.py`).
+- Mandatory execution barrier: All provider actions routed via `JobApplicationRunner.execute_dry_run()`, calling `SafetyEngine.verify_pre_apply()` prior to any browser/provider action.
+- Strict offline fixture navigation guard (`validate_and_resolve_fixture_uri`): Rejects all external HTTP, HTTPS, FTP, and JavaScript schemes and rejects path traversal outside `fixtures/forms/` before any browser launch.
+- Sensitive input hardening: `GreenhouseProvider` explicitly skips sensitive input types (`file`, `password`, `hidden`, `submit`, `button`, `reset`, `image`) and classified sensitive questions (OTP, CAPTCHA, MFA, SSN, bank info) before reading labels or resolving values.
+- Truthful form-answer resolution: `GreenhouseProvider` resolves candidate identity strictly from `ProfileSnapshot`. Ambiguous or unconfigured questions remain unresolved (`unresolved_fields`). No candidate facts fabricated.
+- Deterministic fixture testing: `fixtures/forms/greenhouse_job.html` tested offline with Playwright Chromium. Full-page evidence screenshot captured. Submit action is never invoked.
+- Real-submit gate remains strictly disabled (`RealSubmitGateBlockedError` raised if attempted).
+- Automated backend test suite expanded to 54 passing tests (`tests/test_greenhouse_runner.py`).
 - Frontend test suite (Vitest) verified passing (2 tests).
 
 ### In progress
-- None (Phase 0.5 complete).
+- None (Phase 0.6 complete).
 
 ### Unverified / pending
 - Supabase project and credentials.
 - Current OpenRouter model IDs and pricing.
-- Worker core engine and Greenhouse adapter.
+- LLM Gateway runtime costing implementation (Phase 0.9 / T-009).
 
 ## Next steps
-1. Phase 0.6: Implement Greenhouse dry-run walking skeleton (`worker/providers/greenhouse.py`).
+1. Phase 0.7: Establish Supabase PostgreSQL database schema migration foundation (`migrations/`).
 
 ## End-of-session handoff template
 - Task and date/time

@@ -15,4 +15,4 @@ Statuses: NOT_STARTED, IN_PROGRESS, BLOCKED, DONE, NEEDS_REVIEW.
 | T-007c | Candidate ProfileSource & Local YAML Profile (Phase 0.4) | DONE | Profile models, ProfileSource protocol, LocalFileProfileSource, fixtures/profile.yaml, 29 backend tests passing |
 | T-008 | Kill switch and caps (Phase 0.5) | DONE | KillSwitch (File/InMemory), CapsEnforcer, SafetyEngine, thread-safe ledgers, 44 backend tests passing proving fail-closed safety |
 | T-009 | LLM Gateway and costing | NOT_STARTED | Input/output usage/cost tracked honestly |
-| T-010 | Greenhouse dry-run skeleton | NOT_STARTED | Inspect/fill/evidence/event trail; no real submission |
+| T-010 | Greenhouse dry-run skeleton (Phase 0.6) | DONE | Central JobApplicationRunner enforcing SafetyEngine barrier, strict local fixture validation, sensitive field skipping, truthful GreenhouseProvider form-filling, evidence capture, strictly no submit, 54 passing backend tests |

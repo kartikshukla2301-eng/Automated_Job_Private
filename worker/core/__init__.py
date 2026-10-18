@@ -24,6 +24,7 @@ from worker.core.kill_switch import (
     KillSwitch,
     KillSwitchRecord,
 )
+from worker.core.runner import DryRunExecutionResult, JobApplicationRunner
 from worker.core.safety import SafetyDecision, SafetyEngine
 
 __all__ = [
@@ -33,12 +34,14 @@ __all__ = [
     "CapsEnforcer",
     "CompanyCooldownExceededError",
     "CompanyDailyCapExceededError",
+    "DryRunExecutionResult",
     "FileApplicationLedger",
     "FileKillSwitch",
     "GlobalDailyCapExceededError",
     "InMemoryApplicationLedger",
     "InMemoryKillSwitch",
     "InvalidSafetyStateError",
+    "JobApplicationRunner",
     "KillSwitch",
     "KillSwitchActiveError",
     "KillSwitchRecord",

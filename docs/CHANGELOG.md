@@ -33,3 +33,12 @@
 - Implemented `ApplicationLedger` Protocol, `FileApplicationLedger` (append-only JSONL), and `CapsEnforcer` in `worker/core/caps.py` enforcing global daily ceilings, provider daily ceilings, company 24-hour limits, and company 30-day cooldowns.
 - Created `SafetyEngine` in `worker/core/safety.py` establishing an explicit pre-application execution barrier coordinating the kill switch, caps enforcer, and locked real-submit gate.
 - Post-Audit Corrections: Added in-process thread concurrency locks (`threading.Lock`) to `FileApplicationLedger` and `FileKillSwitch` protecting writes and reads against partial/interleaved records.
+- Phase 0.6: Implemented Greenhouse Dry-Run Walking Skeleton with mandatory Central Execution Runner and Security Hardening.
+- Implemented `JobApplicationRunner` in `worker/core/runner.py` mediating all provider actions through `SafetyEngine.verify_pre_apply()` before any browser or provider execution.
+- Added strict navigation guard `validate_and_resolve_fixture_uri` enforcing that only verified local files within the approved `fixtures/forms/` directory are permitted, strictly rejecting HTTP, HTTPS, FTP, JavaScript, and path traversal attempts before browser launch.
+- Defined `JobProvider` Protocol, `FormField`, and `FormFillResult` in `worker/providers/base.py`.
+- Implemented `GreenhouseProvider` in `worker/providers/greenhouse.py` supporting deterministic fixture inspection, truthful answer resolution from `ProfileSnapshot`, unclassified/unknown field tracking without fabrication, full-page evidence screenshot capture, and strict rejection of real submit requests.
+- Hardened form inspection to skip sensitive input types (`file`, `password`, `hidden`, `submit`, `button`, `reset`, `image`) and classified security fields (OTP, CAPTCHA, MFA, SSN, bank details) before resolving labels or values.
+- Created sanitized offline test fixture `fixtures/forms/greenhouse_job.html` including sensitive field samples (file upload, password, OTP).
+- Expanded automated test suite in `tests/test_greenhouse_runner.py` to 10 comprehensive tests covering pre-apply barrier enforcement, rate cap blocking, external URL rejection, scheme validation, path traversal rejection, self-managed Playwright execution, sensitive field non-population, truthful identity filling, and strict rejection of real submission.
+- Total test coverage expanded to 54 passing backend tests and 2 passing frontend tests.

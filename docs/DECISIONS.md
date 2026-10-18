@@ -21,3 +21,9 @@ Status: Proposed / Awaiting Owner Approval.
 - Context: Appendix B defines `schedule.timezone: Asia/Kolkata` with `active_hours: "09:00-23:00"`, while initial Phase 0.5 daily caps accounting evaluates calendar dates against `timezone.utc`.
 - Proposal: Daily rate cap accounting should evaluate calendar days using the configured `schedule.timezone` (`Asia/Kolkata`) so daily counters reset at local midnight rather than UTC midnight (05:30 AM IST).
 - Constraint: Until approved and verified with boundary tests across midnight, accounting remains UTC-based.
+
+## AD-006 — Mandatory central runner execution barrier for provider actions
+Status: Accepted / Locked for Phase 0.6.
+- Context: Ensure provider adapters (Greenhouse, Lever, etc.) cannot be accidentally invoked without prior safety barrier checks.
+- Decision: All provider automation must be coordinated through a central application runner that invokes `SafetyEngine.verify_pre_apply()` prior to launching browser contexts or filling forms.
+- Real-submit gate remains strictly locked (`real_submit_gate_enabled=False`).
