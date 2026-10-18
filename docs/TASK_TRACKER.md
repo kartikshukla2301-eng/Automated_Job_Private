@@ -16,3 +16,4 @@ Statuses: NOT_STARTED, IN_PROGRESS, BLOCKED, DONE, NEEDS_REVIEW.
 | T-008 | Kill switch and caps (Phase 0.5) | DONE | KillSwitch (File/InMemory), CapsEnforcer, SafetyEngine, thread-safe ledgers, 44 backend tests passing proving fail-closed safety |
 | T-009 | LLM Gateway and costing | NOT_STARTED | Input/output usage/cost tracked honestly |
 | T-010 | Greenhouse dry-run skeleton (Phase 0.6) | DONE | Central JobApplicationRunner enforcing SafetyEngine barrier, strict local fixture validation, sensitive field skipping, truthful GreenhouseProvider form-filling, evidence capture, strictly no submit, 54 passing backend tests |
+| T-011 | Supabase PostgreSQL schema foundation (Phase 0.7) | DONE | migrations/001_initial_schema.sql defining all 13 architecture tables, foreign keys, dedupe constraints, state check constraints, RLS on all tables, and static validation tests (62 passing backend tests) |

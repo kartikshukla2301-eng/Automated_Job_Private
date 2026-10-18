@@ -42,3 +42,16 @@
 - Created sanitized offline test fixture `fixtures/forms/greenhouse_job.html` including sensitive field samples (file upload, password, OTP).
 - Expanded automated test suite in `tests/test_greenhouse_runner.py` to 10 comprehensive tests covering pre-apply barrier enforcement, rate cap blocking, external URL rejection, scheme validation, path traversal rejection, self-managed Playwright execution, sensitive field non-population, truthful identity filling, and strict rejection of real submission.
 - Total test coverage expanded to 54 passing backend tests and 2 passing frontend tests.
+- Phase 0.7: Created initial Supabase PostgreSQL database schema migration (`migrations/001_initial_schema.sql`) per locked architecture Section 14.
+- Implemented all 13 architecture tables: `profile_snapshots`, `resume_versions`, `jobs`, `runs`, `applications`, `application_events`, `form_snapshots`, `answer_bank`, `sessions`, `llm_calls`, `app_config`, `company_rules`, `notifications`.
+- Configured relational foreign keys with explicit delete cascades/set-null/restrict actions.
+- Configured unique deduplication constraints: `uq_jobs_platform_external`, `uq_applications_idempotency`, `uq_applications_user_job`, `uq_profile_snapshots_user_version`, `uq_answer_bank_user_key_scope`, `uq_sessions_platform`, `uq_app_config_user`.
+- Configured check constraints for Section 13 application state machine (`DISCOVERED`, `MATCHED`, `AWAITING_APPROVAL`, `FILLING`, `NEEDS_USER_INPUT`, `BLOCKED`, `SUBMITTING`, `UNCERTAIN`, `VERIFYING`, `APPLIED`, etc.), autonomy levels (`L0`–`L3`), answer bank policies, and company rule types.
+- Unconditionally enabled Row-Level Security (RLS) on all 13 tables with user-isolated policies (`auth.uid() = user_id`) for user tables and application-linked subquery checks.
+- Post-Audit Database Security Hardening:
+  - Removed `auth.users` DDL stub from production migration; legitimate foreign keys directly reference Supabase Auth schema.
+  - Restricted `application_events` and `form_snapshots` RLS policies to `FOR SELECT` only, ensuring immutable audit logging and preventing frontend tampering with captured DOM schemas.
+  - Removed unrestricted `USING (true)` read policies on `runs` and `llm_calls`, making operational telemetry fail-closed (zero direct authenticated policies, accessible only via backend service role or authorized APIs).
+  - Preserved locked architecture for `company_rules` without guessing or inventing unapproved unique constraints (AD-008).
+- Expanded automated static validation test suite in `tests/test_migration_schema.py` to 13 tests covering auth stub absence, read-only audit policies, fail-closed telemetry, and constraint integrity.
+- Total test coverage expanded to 67 passing backend tests and 2 frontend tests.

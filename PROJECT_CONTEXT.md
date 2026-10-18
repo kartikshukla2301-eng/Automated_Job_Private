@@ -68,18 +68,28 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Deterministic fixture testing: `fixtures/forms/greenhouse_job.html` tested offline with Playwright Chromium. Full-page evidence screenshot captured. Submit action is never invoked.
 - Real-submit gate remains strictly disabled (`RealSubmitGateBlockedError` raised if attempted).
 - Automated backend test suite expanded to 54 passing tests (`tests/test_greenhouse_runner.py`).
-- Frontend test suite (Vitest) verified passing (2 tests).
+- Phase 0.7 complete: Initial Supabase PostgreSQL schema migration foundation implemented (`migrations/001_initial_schema.sql`).
+- Defined all 13 core tables required by Architecture v1.0 Section 14: `profile_snapshots`, `resume_versions`, `jobs`, `runs`, `applications`, `application_events`, `form_snapshots`, `answer_bank`, `sessions`, `llm_calls`, `app_config`, `company_rules`, and `notifications`.
+- Established primary keys (UUID with gen_random_uuid() default), foreign keys (referencing auth.users and parent entities), timestamp tracking (`created_at`, `updated_at`), status check constraints matching Section 13 state machine, and deduplication unique constraints (`applications(user_id, job_id)`, `jobs(platform, external_id)`).
+- Enabled Row-Level Security (RLS) on all 13 tables; implemented user-isolated RLS policies (`auth.uid() = user_id`) for user-facing tables, and fail-closed security for browser session persistence (`sessions` table has RLS enabled with 0 authenticated policies, restricting access to backend service role).
+- Post-Audit Database Security Hardening:
+  - Removed `auth.users` DDL stub from production migration; legitimate foreign keys directly reference Supabase Auth schema.
+  - Restricted `application_events` and `form_snapshots` RLS policies to `FOR SELECT` only, ensuring immutable audit logging and preventing frontend tampering with captured DOM schemas.
+  - Removed unrestricted `USING (true)` read policies on `runs` and `llm_calls`, making operational telemetry fail-closed (zero direct authenticated policies, accessible only via backend service role or authorized APIs; AD-007).
+  - Preserved locked architecture for `company_rules` without guessing or inventing unapproved unique constraints (AD-008).
+- Automated static schema validation test suite implemented (`tests/test_migration_schema.py`) with 13 deterministic tests verifying table existence, foreign keys, deduplication indexes, check constraints, RLS enablement, read-only audit policies, and fail-closed telemetry.
+- Total test coverage: 67 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 0.6 complete).
+- None (Phase 0.7 post-audit hardening complete).
 
 ### Unverified / pending
-- Supabase project and credentials.
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phase 0.7).
 - Current OpenRouter model IDs and pricing.
-- LLM Gateway runtime costing implementation (Phase 0.9 / T-009).
+- LLM Gateway runtime costing implementation (Phase 0.8/0.9).
 
 ## Next steps
-1. Phase 0.7: Establish Supabase PostgreSQL database schema migration foundation (`migrations/`).
+1. Phase 0.8: Worker Architecture Core — Task Queue & Execution Scheduler (or Phase 0.9 LLM Gateway foundation per roadmap).
 
 ## End-of-session handoff template
 - Task and date/time
