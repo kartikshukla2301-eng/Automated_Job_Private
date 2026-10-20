@@ -26,6 +26,7 @@ from worker.core.kill_switch import (
 )
 from worker.core.runner import DryRunExecutionResult, JobApplicationRunner
 from worker.core.safety import SafetyDecision, SafetyEngine
+from worker.core.workflow import WalkingSkeletonWorkflow
 
 __all__ = [
     "ApplicationLedger",
@@ -50,4 +51,5 @@ __all__ = [
     "SafetyBlockedError",
     "SafetyDecision",
     "SafetyEngine",
+    "WalkingSkeletonWorkflow",
 ]

@@ -1,6 +1,7 @@
 """Centralized application and service configuration using Pydantic Settings."""
 
 from typing import Dict, List, Literal, Optional
+from fastapi import Request
 from pydantic import BaseModel, Field
 from pydantic_settings import (
     BaseSettings,
@@ -83,6 +84,7 @@ class ProfileConfig(BaseModel):
     """Candidate profile source and freshness settings."""
 
     source: Literal["local_file", "devleveler"] = "local_file"
+    local_file_path: str = Field(default="fixtures/profile.yaml", description="Path to local profile YAML")
     stale_after_days: int = Field(default=7, ge=1)
 
 
@@ -107,6 +109,13 @@ class Settings(BaseSettings):
 
     api_host: str = Field(default="127.0.0.1", description="FastAPI host binding")
     api_port: int = Field(default=8000, ge=1, le=65535, description="FastAPI port binding")
+    worker_token: Optional[str] = Field(
+        default=None, description="Scoped worker API token for local control actions"
+    )
+    allow_tokenless_dev: bool = Field(
+        default=False,
+        description="Explicit flag permitting unauthenticated worker actions in development/test environments on localhost only",
+    )
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO", description="Application log level"
@@ -139,8 +148,15 @@ class Settings(BaseSettings):
         )
 
 
-def get_settings() -> Settings:
-    """Factory function providing configured settings instance."""
+def get_settings(request: Request = None) -> Settings:
+    """Factory function providing configured settings instance.
+
+    When invoked within a FastAPI request context, resolves the settings
+    bound to the current application state. Outside request contexts,
+    returns a default Settings instance.
+    """
+    if request is not None and hasattr(request, "app") and hasattr(request.app.state, "settings"):
+        return request.app.state.settings
     return Settings()
 
 

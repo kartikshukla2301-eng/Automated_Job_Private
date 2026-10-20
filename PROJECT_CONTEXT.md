@@ -79,17 +79,28 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Preserved locked architecture for `company_rules` without guessing or inventing unapproved unique constraints (AD-008).
 - Automated static schema validation test suite implemented (`tests/test_migration_schema.py`) with 13 deterministic tests verifying table existence, foreign keys, deduplication indexes, check constraints, RLS enablement, read-only audit policies, and fail-closed telemetry.
 - Total test coverage: 67 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 0.8 complete: Walking Skeleton Integration (`worker/core/workflow.py`, `services/api/routes/dry_run.py`, `services/api/dependencies.py`).
+- Integrated FastAPI backend, candidate ProfileSource (`worker/profile/`), SafetyEngine (`worker/core/safety.py`), central JobApplicationRunner (`worker/core/runner.py`), and Greenhouse dry-run provider (`worker/providers/greenhouse.py`) into an end-to-end, testable workflow.
+- Bound execution strictly to the verified local HTML fixture `fixtures/forms/greenhouse_job.html`; enforced schema validation (`extra="forbid"`) to reject arbitrary URLs, network schemes, and filesystem paths before reaching worker logic.
+- Implemented structured error responses matching safety engine states: HTTP 423 for active kill switch, HTTP 429 for rate cap exhaustion, HTTP 500 for missing/corrupted kill switch state (fail-closed), and HTTP 403 for submit gate or safety barrier violations.
+- Added optional worker token bearer authentication (`verify_worker_token`) and comprehensive dependency injection providers in `services/api/dependencies.py`.
+- Automated integration test suite implemented (`tests/test_integration_dry_run.py`) with 10 tests verifying happy-path dry run, schema validation, kill switch blocking, missing kill switch fail-closed response, cap exhaustion, worker token validation, missing profile/fixture rejection, and assertion that no submission is ever performed.
+- Post-Audit Final Security & Configuration Hardening:
+  - Fail-closed worker authentication: production and staging reject unauthenticated requests with HTTP 500 when unconfigured; tokenless execution restricted strictly to loopback interfaces on local dev/test with explicit `allow_tokenless_dev=True` opt-in.
+  - Settings injection via application state (`app.state.settings` and `get_settings(request: Request = None)`) eliminating mutable `dependency_overrides` from production application code.
+  - Evidence and error path sanitization: converted absolute paths (`C:\Users\...`) to relative references in `GreenhouseDryRunResponse`, and sanitized `FileNotFoundError` client-facing error payloads.
+- Total test coverage: 82 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 0.7 post-audit hardening complete).
+- None (Phase 0.8 final security hardening complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phase 0.7).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phase 0.7/0.8).
 - Current OpenRouter model IDs and pricing.
-- LLM Gateway runtime costing implementation (Phase 0.8/0.9).
+- LLM Gateway runtime costing implementation (Phase 0.9).
 
 ## Next steps
-1. Phase 0.8: Worker Architecture Core — Task Queue & Execution Scheduler (or Phase 0.9 LLM Gateway foundation per roadmap).
+1. Phase 0.9: Central LLM Gateway foundation and OpenRouter integration (`worker/core/llm_gateway.py`).
 
 ## End-of-session handoff template
 - Task and date/time

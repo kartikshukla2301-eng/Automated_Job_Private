@@ -55,3 +55,15 @@
   - Preserved locked architecture for `company_rules` without guessing or inventing unapproved unique constraints (AD-008).
 - Expanded automated static validation test suite in `tests/test_migration_schema.py` to 13 tests covering auth stub absence, read-only audit policies, fail-closed telemetry, and constraint integrity.
 - Total test coverage expanded to 67 passing backend tests and 2 frontend tests.
+- Phase 0.8: Implemented Walking Skeleton Integration connecting FastAPI backend, candidate ProfileSource, SafetyEngine, central JobApplicationRunner, and Greenhouse dry-run provider.
+- Created `WalkingSkeletonWorkflow` in `worker/core/workflow.py` coordinating profile loading, safety barriers, provider initialization, and dry-run execution against the verified local fixture `fixtures/forms/greenhouse_job.html`.
+- Implemented `POST /api/v1/dry-run/greenhouse` route in `services/api/routes/dry_run.py` accepting `GreenhouseDryRunRequest` with `extra="forbid"` to strictly reject custom URLs, schemes, and filesystem paths.
+- Added structured HTTP error mappings for safety exceptions: HTTP 423 (Locked) for active kill switches, HTTP 429 (Too Many Requests) for daily/provider/company caps, HTTP 500 (Internal Server Error) for invalid safety states, and HTTP 403 (Forbidden) for safety barrier or submit gate violations.
+- Implemented dependency injection providers in `services/api/dependencies.py` for all core components with clean test-override capabilities and optional worker token verification (`verify_worker_token`).
+- Implemented 10 comprehensive integration tests in `tests/test_integration_dry_run.py` verifying full end-to-end execution, payload schema rejection of extra fields, kill switch tripping, missing kill switch fail-closed state, cap exhaustion, worker token authentication, missing profile/fixture rejection, and non-submission verification.
+- Phase 0.8 Final Security & Configuration Hardening:
+  - Hardened `verify_worker_token` to fail closed across all non-development environments (HTTP 500 if unconfigured in production/staging).
+  - Restricted tokenless execution strictly to local development/test environments on loopback interfaces (`127.0.0.1`, `localhost`, `::1`) with explicit `allow_tokenless_dev=True` opt-in, rejecting unsafe/non-local hosts (`0.0.0.0`) with HTTP 403.
+  - Replaced `app.dependency_overrides` settings mutation in `create_app()` factory with clean `app.state.settings` binding and request-aware `get_settings()` dependency injection, eliminating cross-test state leakage risks.
+  - Sanitized API evidence and error responses: `job_url` and `screenshot_path` return safe relative references rather than host filesystem paths (`C:\Users\...`); raw `FileNotFoundError` exceptions are replaced with generic client-safe messages while preserving internal structured logs.
+- Expanded backend automated test suite to 82 passing tests (+5 regression/security tests) and 2 passing frontend tests.
