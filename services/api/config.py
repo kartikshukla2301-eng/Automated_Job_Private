@@ -58,13 +58,42 @@ class MatchingConfig(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    """LLM gateway quotas and model chains."""
+    """LLM gateway quotas, circuit breaker thresholds, and model chains."""
 
     daily_call_budget: int = Field(default=400, ge=0)
+    daily_cost_budget_usd: Optional[float] = Field(
+        default=None, ge=0.0, description="Optional daily cost spending ceiling in USD"
+    )
     chains: Dict[str, List[str]] = Field(
         default_factory=lambda: {
             "unknown_question": ["model_a", "model_b"],
         }
+    )
+    circuit_breaker_failure_threshold: int = Field(
+        default=5, ge=1, description="Consecutive provider failures before opening circuit"
+    )
+    circuit_breaker_recovery_seconds: float = Field(
+        default=60.0, ge=1.0, description="Seconds circuit stays OPEN before entering HALF_OPEN"
+    )
+    cache_ttl_seconds: int = Field(
+        default=86400, ge=60, description="Default response cache expiration in seconds"
+    )
+    model_pricing: Dict[str, Dict[str, float]] = Field(
+        default_factory=lambda: {
+            "model_a": {
+                "input_per_million": 0.20,
+                "output_per_million": 0.20,
+            },
+            "model_b": {
+                "input_per_million": 0.20,
+                "output_per_million": 0.20,
+            },
+            "meta-llama/llama-3-8b-instruct": {
+                "input_per_million": 0.20,
+                "output_per_million": 0.20,
+            },
+        },
+        description="Configured pricing fallback per 1M tokens: {'input_per_million': float, 'output_per_million': float}",
     )
 
 
@@ -115,6 +144,19 @@ class Settings(BaseSettings):
     allow_tokenless_dev: bool = Field(
         default=False,
         description="Explicit flag permitting unauthenticated worker actions in development/test environments on localhost only",
+    )
+
+    openrouter_api_key: Optional[str] = Field(
+        default=None, description="OpenRouter API Key for runtime LLM gateway"
+    )
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1", description="OpenRouter base API endpoint"
+    )
+    openrouter_app_name: str = Field(
+        default="AI Job Application Agent", description="HTTP-Referer/X-Title for OpenRouter"
+    )
+    openrouter_site_url: Optional[str] = Field(
+        default="https://github.com/job-agent", description="OpenRouter site URL"
     )
 
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(

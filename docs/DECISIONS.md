@@ -41,3 +41,13 @@ Status: Pending / Awaiting Architecture Decision.
   1. Add `CONSTRAINT uq_company_rules UNIQUE (user_id, company, rule_type)`: Enforces at most one active rule per type per company.
   2. Retain current schema (no unique constraint): Allows multiple rules per company and resolves precedence/expiration at runtime in the policy engine.
 - Decision: Defer adding any constraint to preserve the locked architecture without guessing. Runtime policy engine will handle resolution until explicitly decided.
+
+## AD-009 — Fail-Closed Unpriced Call Policy for LLM Cost Budgets
+Status: Accepted / Locked for Phase 0.9.
+- Context: When a daily cost budget (`daily_cost_budget_usd`) is configured, OpenRouter or upstream model providers may occasionally return unpriced completions (omitting provider-reported `cost`) or completions for models without pre-configured token pricing rates.
+- Decision:
+  1. Fail-closed: When a daily cost budget is configured, every paid completion request requires pre-configured token pricing in `model_pricing` as a prerequisite before dispatching to the provider. Requests for unpriced models will be rejected with `LLMBudgetExceededError` (or degraded).
+  2. Cost calculation precedence: Authoritative provider-reported cost takes precedence. If missing, cost is estimated strictly from valid provider token counts and configured rates.
+  3. If both provider cost and valid token usage are missing, the cost is recorded as `unknown`. To prevent silent budget circumvention, recorded unknown-cost calls block subsequent paid provider requests for that day until the daily accounting boundary or explicit administrative reconciliation.
+  4. Unknown costs are never treated as zero.
+  5. Any relaxation of this policy requires written proposal and explicit owner approval.

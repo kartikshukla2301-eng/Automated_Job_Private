@@ -90,17 +90,27 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Settings injection via application state (`app.state.settings` and `get_settings(request: Request = None)`) eliminating mutable `dependency_overrides` from production application code.
   - Evidence and error path sanitization: converted absolute paths (`C:\Users\...`) to relative references in `GreenhouseDryRunResponse`, and sanitized `FileNotFoundError` client-facing error payloads.
 - Total test coverage: 82 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 0.9 complete: Hardened Central LLM Gateway and OpenRouter integration (`worker/core/llm_gateway.py`).
+- Implemented central `LLMGateway` and asynchronous `OpenRouterClient` with secure credentials handling, model selection fallback chains, and strict provider error mapping.
+- Structured data models: `LLMRequest`, `LLMResponse`, `LLMTokenUsage`, and `LLMCallRecord` auditing input/output tokens, costs, provenance, latency, cache hits, execution run ID, and application ID.
+- Usage and cost accounting: distinguishes reported, estimated, and unknown costs. Explicitly avoids fabricating costs or treating unknown costs as zero. Validates provider costs and token counts (rejecting negative, NaN, infinite, or non-finite values).
+- Daily budget enforcement: enforces daily call ceiling (`daily_call_budget`) including `PROVIDER_ERROR` accounting, serialized `asyncio.Lock` preventing concurrency oversubscription, and AD-009 fail-closed daily cost budget (`daily_cost_budget_usd`). Persisted via thread-safe `FileLLMCallLedger` (`worker/sessions/llm_calls.jsonl`), surviving worker process reboots. Single-process boundary documented.
+- 3-state `CircuitBreaker` (`CLOSED`, `OPEN`, `HALF_OPEN`): deterministic state machine with configurable thresholds, recovery timeout, single in-flight probe trial control in `HALF_OPEN`, probe cancellation release, and non-provider failure exclusion.
+- Deduplicating response cache (`LLMCache`, `InMemoryLLMCache`, `FileLLMCache`): SHA-256 hashed keys isolated by candidate profile version, task, model, generation parameters (`temperature`, `max_tokens`), and `cache_scope` without logging or leaking raw PII. Unique temporary files prevent concurrent write collisions.
+- Hardened prompt injection defense helper `sanitize_untrusted_prompt_data`: strips invisible formatting, BOM, and bidi overrides while preserving readable Unicode text, neutralizes literal delimiter tags (case-insensitive) to prevent boundary breakout, truncates oversized strings, and encloses external text in XML delimiters.
+- Degraded mode and safe fallbacks: when providers fail, time out, or budget is exhausted, callers can opt for degraded empty completions without hallucinating candidate facts or authorizing real submissions.
+- Managed single-process accessor: implemented `get_managed_llm_gateway()` in `worker/core/llm_gateway.py` and `get_llm_gateway()` dependency provider in `services/api/dependencies.py`.
+- Total test coverage: 123 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 0.8 final security hardening complete).
+- None (Phase 0.9 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phase 0.7/0.8).
-- Current OpenRouter model IDs and pricing.
-- LLM Gateway runtime costing implementation (Phase 0.9).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–0.9).
+- Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 
 ## Next steps
-1. Phase 0.9: Central LLM Gateway foundation and OpenRouter integration (`worker/core/llm_gateway.py`).
+1. Phase 1.0 / Next architectural milestone (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time

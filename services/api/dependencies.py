@@ -122,3 +122,10 @@ def get_walking_skeleton_workflow(
 ) -> WalkingSkeletonWorkflow:
     """Provide WalkingSkeletonWorkflow for approved local fixture dry-runs."""
     return WalkingSkeletonWorkflow(runner=runner)
+
+
+def get_llm_gateway(app_settings: Settings = Depends(get_settings)):
+    """Provide the managed single-process LLM Gateway instance."""
+    from worker.core.llm_gateway import get_managed_llm_gateway
+
+    return get_managed_llm_gateway()

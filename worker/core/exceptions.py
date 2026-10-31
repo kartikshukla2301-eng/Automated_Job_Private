@@ -35,3 +35,40 @@ class CompanyCooldownExceededError(CapExceededError):
 
 class RealSubmitGateBlockedError(SafetyBlockedError):
     """Raised when a real submission is attempted while real submissions are locked."""
+
+
+# ==============================================================================
+# LLM Gateway and Runtime AI Exceptions (Phase 0.9)
+# ==============================================================================
+
+
+class LLMGatewayError(Exception):
+    """Base exception for all central LLM Gateway failures."""
+
+
+class LLMAuthenticationError(LLMGatewayError):
+    """Raised when OpenRouter API credentials are missing, empty, or rejected."""
+
+
+class LLMBudgetExceededError(LLMGatewayError):
+    """Raised when daily LLM call or cost quotas are exhausted."""
+
+
+class LLMCircuitBreakerOpenError(LLMGatewayError):
+    """Raised when the gateway circuit breaker is OPEN due to repeated provider failures."""
+
+
+class LLMProviderError(LLMGatewayError):
+    """Raised when the upstream provider returns an HTTP error, 5xx, or network failure."""
+
+
+class LLMTimeoutError(LLMProviderError):
+    """Raised when an LLM provider request exceeds its configured timeout."""
+
+
+class LLMMalformedResponseError(LLMGatewayError):
+    """Raised when provider returns an unparseable or schema-violating payload."""
+
+
+class LLMDegradedModeError(LLMGatewayError):
+    """Raised when operating in degraded mode and a requested task cannot be satisfied."""

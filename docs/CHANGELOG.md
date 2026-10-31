@@ -67,3 +67,23 @@
   - Replaced `app.dependency_overrides` settings mutation in `create_app()` factory with clean `app.state.settings` binding and request-aware `get_settings()` dependency injection, eliminating cross-test state leakage risks.
   - Sanitized API evidence and error responses: `job_url` and `screenshot_path` return safe relative references rather than host filesystem paths (`C:\Users\...`); raw `FileNotFoundError` exceptions are replaced with generic client-safe messages while preserving internal structured logs.
 - Expanded backend automated test suite to 82 passing tests (+5 regression/security tests) and 2 passing frontend tests.
+- Phase 0.9: Implemented Central LLM Gateway Foundation (`worker/core/llm_gateway.py`) with OpenRouter integration, cost accounting, daily budget enforcement, 3-state circuit breaker, TTL response caching, and prompt injection defenses per locked architecture Sections 14, 15, and Appendix B.
+- Created typed request and result models (`LLMRequest`, `LLMResponse`, `LLMTokenUsage`, `LLMCallRecord`) capturing task, model, tokens, costs, latency, cache hits, run/app IDs, timestamps, and pricing metadata.
+- Implemented `OpenRouterClient` wrapping asynchronous HTTP transport with secure credential handling, header injection, secret redaction, token extraction, and explicit exception mapping.
+- Implemented honest token & cost accounting: distinguishes provider-reported (`reported`), table-calculated (`estimated`), and missing (`unknown`) costs. Unknown costs are explicitly preserved as `None` and never fabricated as `0.0`.
+- Implemented daily call & cost budget enforcement with durable persistence via `FileLLMCallLedger` (`worker/sessions/llm_calls.jsonl`) surviving worker restarts, blocking over-budget requests or routing safely to degraded mode.
+- Implemented deterministic 3-state `CircuitBreaker` (`CLOSED`, `OPEN`, `HALF_OPEN`) with injectable clock, explicit failure thresholds, probe trials, and failure classification (only provider transport/5xx errors trip the breaker, caller validation and budget limits do not).
+- Implemented deduplicating response cache (`LLMCache`, `InMemoryLLMCache`, `FileLLMCache`) with SHA-256 key hashing (`compute_cache_key`), profile version isolation, TTL expiration, and zero PII/prompt leakage in cache keys.
+- Implemented prompt injection defense helper `sanitize_untrusted_prompt_data` stripping invisible control characters, enforcing character limits, and wrapping untrusted external job/form data in explicit XML delimiters.
+- Implemented safe degraded mode fallbacks: returns empty/safe completions without hallucinating candidate facts or authorizing real submissions when the gateway is degraded.
+- Phase 0.9 Comprehensive Correctness & Security Hardening:
+  - Accounted for `PROVIDER_ERROR` in daily call quotas across both `InMemoryLLMCallLedger` and `FileLLMCallLedger`.
+  - Eliminated check-then-await-then-record race conditions via serialized `asyncio.Lock` covering quota reservations, provider dispatch, and ledger reconciliation.
+  - Formalized AD-009: fail-closed daily cost budget policy requiring configured pricing as a prerequisite, blocking unpriced requests, and halting subsequent paid requests if an unknown-cost call occurs.
+  - Validated provider costs and token usage: rejected negative, NaN, infinite, or non-finite costs and tokens, treating malformed provider data safely as unknown.
+  - Enhanced cache key isolation: incorporated `temperature`, `max_tokens`, and explicit `cache_scope` to prevent cross-parameter and cross-context cache collisions.
+  - Hardened file cache temporary writes: replaced static `.tmp` filenames with unique UUID-based temp files followed by atomic replacement, preventing concurrent write collisions.
+  - Hardened prompt injection defense: neutralized literal opening and closing delimiter tags (case-insensitive) inside untrusted content to prevent delimiter breakouts, and stripped dangerous Unicode invisible formatting (zero-width characters, BOM, bidi overrides) while preserving readable multilingual text.
+  - Hardened circuit breaker `HALF_OPEN` state: limited trial probes to exactly one in-flight probe under concurrency with explicit probe release on cancellation or caller errors.
+  - Added managed process-wide singleton accessor `get_managed_llm_gateway()` in `worker/core/llm_gateway.py` and dependency injection provider `get_llm_gateway()` in `services/api/dependencies.py`.
+- Expanded automated backend test suite to 123 passing tests (+15 comprehensive regression and security tests in `tests/test_llm_gateway.py`) and 2 passing frontend tests.
