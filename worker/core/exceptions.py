@@ -72,3 +72,28 @@ class LLMMalformedResponseError(LLMGatewayError):
 
 class LLMDegradedModeError(LLMGatewayError):
     """Raised when operating in degraded mode and a requested task cannot be satisfied."""
+
+
+# =====================================================================
+# Answer Bank & Policy Engine Exceptions (Phase 1.0)
+# =====================================================================
+
+
+class AnswerBankError(Exception):
+    """Base exception for all Answer Bank operations."""
+
+
+class InvalidAnswerEntryError(AnswerBankError):
+    """Raised when an Answer Bank record is malformed or invalid."""
+
+
+class ExpiredAnswerError(AnswerBankError):
+    """Raised when an Answer Bank record has passed its valid_until date."""
+
+
+class AmbiguousAnswerError(AnswerBankError):
+    """Raised when multiple conflicting answers match a single query."""
+
+
+class PolicyViolationError(AnswerBankError):
+    """Raised when an action violates code-enforced PolicyEngine rules."""

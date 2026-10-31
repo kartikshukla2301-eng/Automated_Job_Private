@@ -5,7 +5,11 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from worker.answers.models import ResolutionStatus
+from worker.answers.resolver import AnswerResolver
 from worker.core.exceptions import RealSubmitGateBlockedError
+from worker.policy.engine import PolicyEngine
+from worker.policy.taxonomy import PolicyType
 from worker.profile.models import ProfileSnapshot
 from worker.providers.base import FormField, FormFillResult, JobProvider
 
@@ -51,14 +55,46 @@ class GreenhouseProvider(JobProvider):
 
     name: str = "greenhouse"
 
-    def resolve_field(self, label_text: str, field_id: str, profile: ProfileSnapshot) -> Optional[str]:
-        """Resolve a field value strictly from candidate profile without inventing answers.
+    def __init__(
+        self,
+        answer_resolver: Optional[AnswerResolver] = None,
+        policy_engine: Optional[PolicyEngine] = None,
+    ) -> None:
+        self.answer_resolver = answer_resolver
+        self.policy_engine = policy_engine or PolicyEngine()
+
+    def resolve_field(
+        self,
+        label_text: str,
+        field_id: str,
+        profile: ProfileSnapshot,
+        scope: str = "provider:greenhouse",
+    ) -> Optional[str]:
+        """Resolve a field value strictly through Answer Bank and PolicyEngine without inventing answers.
 
         Returns:
-            Resolved string value if a verified fact exists in the profile; None otherwise.
+            Resolved string value if a verified fact exists and is policy approved; None otherwise.
         """
         clean_label = label_text.strip().lower()
         clean_id = field_id.strip().lower()
+        primary_key = clean_id or clean_label
+
+        # 1. If AnswerResolver is injected, resolve with Answer Bank and Profile fallback
+        if self.answer_resolver is not None:
+            res = self.answer_resolver.resolve_with_profile_fallback(
+                field_key=primary_key,
+                label_text=label_text,
+                profile=profile,
+                scope=scope,
+            )
+            if res.status == ResolutionStatus.RESOLVED and res.policy_approved:
+                return str(res.resolved_value)
+            return None
+
+        # 2. Otherwise enforce PolicyEngine over candidate profile
+        decision = self.policy_engine.evaluate(primary_key, label_text)
+        if not decision.allowed or decision.is_blocked:
+            return None
 
         # 1. First Name
         if "first_name" in clean_id or "first name" in clean_label:

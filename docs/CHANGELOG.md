@@ -87,3 +87,13 @@
   - Hardened circuit breaker `HALF_OPEN` state: limited trial probes to exactly one in-flight probe under concurrency with explicit probe release on cancellation or caller errors.
   - Added managed process-wide singleton accessor `get_managed_llm_gateway()` in `worker/core/llm_gateway.py` and dependency injection provider `get_llm_gateway()` in `services/api/dependencies.py`.
 - Expanded automated backend test suite to 123 passing tests (+15 comprehensive regression and security tests in `tests/test_llm_gateway.py`) and 2 passing frontend tests.
+- Phase 1.0: Implemented Answer Bank and Policy Engine Foundation (`worker/answers/`, `worker/policy/`) per locked architecture Sections 7 and 8.
+  - Implemented strongly typed `AnswerBankEntry` models with strict validation, freshness/provenance tracking (`source`, `confidence`, `last_confirmed_at`, `valid_until`), and architectural enforcement (`source == llm` forces `needs_review = True`).
+  - Implemented `AnswerBankRepository` protocol and thread-safe deterministic `InMemoryAnswerBankRepository` supporting adding, updating, key lookup, alias/variant search, scope isolation (`global`, `company:<name>`, `provider:<name>`), and review flagging.
+  - Implemented deterministic `AnswerResolver` pipeline executing exact key matching, scoped hierarchy, normalized alias and question variant matching, numeric range evaluation in `option_mapping` (e.g. `<=15`, `<=30`), fail-closed expiry handling, ambiguous match detection, and unverified/needs-review gating.
+  - Implemented centralized code-enforced `PolicyEngine` with fixed 12-category taxonomy (`FieldCategory`) and locked policies (`auto`, `auto+log`, `always_ask`, `never_fill`).
+  - Code-enforced security guardrail: sensitive credentials (passwords, OTPs, SSN, national IDs, bank accounts, security codes) are strictly classified as `SENSITIVE_SECURITY` and mapped to `never_fill` without exception; cannot be overridden by configuration or Answer Bank record policies.
+  - Unknown or unclassified fields default to `always_ask` (fail closed).
+  - Implemented audit and traceability metadata generator with automatic redaction of sensitive and PII values (`build_audit_metadata`, `redact_sensitive_value`).
+  - Upgraded `GreenhouseProvider` with optional `AnswerResolver` and `PolicyEngine` injection, resolving verified fields truthfully with profile fallback, enforcing policy approvals, and skipping sensitive fields.
+  - Expanded automated backend test suite to 148 passing tests (+25 comprehensive Phase 1.0 tests in `tests/test_answer_bank_and_policy.py`) and 2 passing frontend tests.

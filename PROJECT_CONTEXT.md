@@ -101,16 +101,26 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Degraded mode and safe fallbacks: when providers fail, time out, or budget is exhausted, callers can opt for degraded empty completions without hallucinating candidate facts or authorizing real submissions.
 - Managed single-process accessor: implemented `get_managed_llm_gateway()` in `worker/core/llm_gateway.py` and `get_llm_gateway()` dependency provider in `services/api/dependencies.py`.
 - Total test coverage: 123 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.0 complete: Answer Bank and Policy Engine Foundation (`worker/answers/`, `worker/policy/`).
+- Implemented strongly typed `AnswerBankEntry` models with strict validation, freshness/provenance tracking (`source`, `confidence`, `last_confirmed_at`, `valid_until`), and architectural rule enforcement (`source == llm` forces `needs_review = True`).
+- Implemented `AnswerBankRepository` protocol and thread-safe deterministic `InMemoryAnswerBankRepository` supporting adding, updating, key lookup, alias/variant search, scope isolation (`global`, `company:<name>`, `provider:<name>`), and review flagging.
+- Implemented deterministic `AnswerResolver` pipeline executing exact key matching, scoped hierarchy, normalized alias and question variant matching, numeric range evaluation in `option_mapping` (e.g. `<=15`, `<=30`), fail-closed expiry handling, ambiguous match detection, and unverified/needs-review gating.
+- Implemented centralized code-enforced `PolicyEngine` with fixed 12-category taxonomy (`FieldCategory`) and locked policies (`auto`, `auto+log`, `always_ask`, `never_fill`).
+- Code-enforced security guardrail: sensitive credentials (passwords, OTPs, SSN, national IDs, bank accounts, security codes) are strictly classified as `SENSITIVE_SECURITY` and mapped to `never_fill` without exception; cannot be overridden by configuration or Answer Bank record policies.
+- Unknown or unclassified fields default to `always_ask` (fail closed).
+- Implemented audit and traceability metadata generator with automatic redaction of sensitive and PII values (`build_audit_metadata`, `redact_sensitive_value`).
+- Upgraded `GreenhouseProvider` with optional `AnswerResolver` and `PolicyEngine` injection, resolving verified fields truthfully with profile fallback, enforcing policy approvals, and skipping sensitive fields.
+- Total test coverage: 148 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 0.9 complete).
+- None (Phase 1.0 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–0.9).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.0).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 
 ## Next steps
-1. Phase 1.0 / Next architectural milestone (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.1 / Job board discovery modules or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time
