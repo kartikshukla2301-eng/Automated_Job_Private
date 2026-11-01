@@ -126,16 +126,27 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Added discovery fixtures in `fixtures/discovery/greenhouse_jobs.json` and `fixtures/discovery/lever_postings.json`.
   - Expanded automated backend test suite from 148 to 214 passing tests (+66 tests in `tests/test_job_models_and_normalization.py`, `tests/test_discovery_adapters.py`, `tests/test_job_repository.py`, `tests/test_discovery_service.py`, `tests/test_form_parsing_foundation.py`). All 2 frontend tests passing.
 
+- Phase 1.2 complete: Intelligent Job Matching and Scoring Engine (`worker/matching/`).
+  - Implemented strongly typed matching models in `worker/matching/models.py`: `MatchDecision` (`MATCH`, `BORDERLINE`, `REJECT`, `EXCLUDED`, `UNRESOLVED`), `MatchScoreBreakdown`, `MatchExplanation`, `CandidateJobPreferences`, `HardFilterResult`, `JobMatchRequest`, and `JobMatchResult`.
+  - Implemented deterministic hard eligibility filters in `worker/matching/hard_filters.py`: evaluates job lifecycle status, max job age / freshness (24h default), duplicate & already-applied jobs, blocklisted companies & keywords, company cooldown (1 per 30d) & daily caps (2 per day), work mode & location alignment, employment type compatibility, experience & seniority ceilings, and minimum salary constraints. Invariant: missing fields never invented and never cause rejection unless strictly required by preferences; hard exclusions cannot be overridden by LLM or high scores.
+  - Implemented explainable weighted scoring engine in `worker/matching/scoring.py` adhering strictly to Architecture Section 10 weights: Required skills 30%, Role relevance 20%, Experience fit 15%, Preferred skills 15%, Location/work mode 10%, Project evidence 10%. Features skill synonym normalization, token overlap role scoring, experience gap scaling, and tech stack evidence extraction from project portfolios.
+  - Implemented local embedding provider abstraction in `worker/matching/embedding.py`: `EmbeddingProvider` protocol, `LocalSentenceTransformerEmbeddingProvider` (for local sentence-transformer models like `all-MiniLM-L6-v2`), `DeterministicFallbackEmbeddingProvider` (deterministic 384-d unit vector hashing fallback without external API calls or neural dependencies), and pure standard-library cosine similarity.
+  - Implemented borderline review pipeline in `worker/matching/borderline.py` invoking central `LLMGateway`: triggered strictly when score falls within borderline band [55, 70]; applies prompt injection sanitization on untrusted job descriptions (`sanitize_untrusted_prompt_data`); validates strict structured output (`BorderlineLLMOutput`); bounded token usage; fails safe to deterministic decision if LLM call fails or returns malformed response; cannot override hard filters.
+  - Implemented central `JobMatchingService` in `worker/matching/service.py`: coordinates end-to-end matching pipeline, executes batch matching with stable deterministic ranking, and updates job scores and statuses (`MATCHED` / `REJECTED`) in persistence via future-compatible `JobRepository.update_score()`.
+  - Implemented deduplication safety classifier in `worker/matching/deduplication.py`: distinguishes Key 1 exact provider matches, Key 2 + 3 cross-platform identical matches, possible duplicates (same canonical key but distinct requisition descriptions preserved without losing openings), and distinct openings.
+  - Total test coverage: 256 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+
 ### In progress
-- None (Phase 1.1 complete).
+- None (Phase 1.2 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.1).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.2).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
+- Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.2 / Job Matching and Scoring Foundation or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.3 / Application Lifecycle State Machine or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time

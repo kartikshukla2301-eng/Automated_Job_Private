@@ -7,7 +7,6 @@ from typing import Any, Optional
 from worker.core.runner import DryRunExecutionResult, JobApplicationRunner
 from worker.core.safety import SafetyEngine
 from worker.profile.source import ProfileSource
-from worker.providers.greenhouse import GreenhouseProvider
 
 logger = logging.getLogger("worker.core.workflow")
 
@@ -44,6 +43,8 @@ class WalkingSkeletonWorkflow:
                 raise ValueError(
                     "Must provide either a pre-configured runner or both safety_engine and profile_source."
                 )
+            from worker.providers.greenhouse import GreenhouseProvider
+
             self.runner = JobApplicationRunner(
                 safety_engine=safety_engine,
                 profile_source=profile_source,

@@ -14,7 +14,6 @@ from worker.core.safety import SafetyDecision, SafetyEngine
 from worker.profile.models import ProfileSnapshot
 from worker.profile.source import ProfileSource
 from worker.providers.base import FormFillResult, JobProvider
-from worker.providers.greenhouse import GreenhouseProvider
 
 logger = logging.getLogger("worker.core.runner")
 
@@ -124,9 +123,11 @@ class JobApplicationRunner:
     ) -> None:
         self.safety_engine = safety_engine
         self.profile_source = profile_source
-        self.providers: Dict[str, JobProvider] = providers or {
-            "greenhouse": GreenhouseProvider(),
-        }
+        if providers is not None:
+            self.providers = providers
+        else:
+            from worker.providers.greenhouse import GreenhouseProvider
+            self.providers = {"greenhouse": GreenhouseProvider()}
         self.evidence_dir = evidence_dir or Path("worker/sessions/evidence")
         self.fixtures_dir = (fixtures_dir or Path("fixtures/forms")).resolve()
 

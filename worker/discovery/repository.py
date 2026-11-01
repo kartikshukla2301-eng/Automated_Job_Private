@@ -11,7 +11,7 @@ Following Section 10 and Section 14 (jobs table schema):
 import asyncio
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Protocol, Set, Tuple, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, Set, Tuple, runtime_checkable
 from uuid import UUID
 
 from worker.discovery.models import Job, JobStatus
@@ -60,6 +60,16 @@ class JobRepository(Protocol):
         status: Optional[JobStatus] = None,
     ) -> int:
         """Count jobs matching optional platform and status filters."""
+        ...
+
+    async def update_score(
+        self,
+        job_id: UUID,
+        score: float,
+        score_breakdown: Dict[str, Any],
+        status: Optional[JobStatus] = None,
+    ) -> Optional[Job]:
+        """Update job score, score_breakdown, and status in persistence."""
         ...
 
 
@@ -174,3 +184,25 @@ class InMemoryJobRepository:
                     continue
                 count += 1
             return count
+
+    async def update_score(
+        self,
+        job_id: UUID,
+        score: float,
+        score_breakdown: Dict[str, Any],
+        status: Optional[JobStatus] = None,
+    ) -> Optional[Job]:
+        async with self._lock:
+            job = self._jobs.get(job_id)
+            if not job:
+                return None
+            update_data: Dict[str, Any] = {
+                "score": score,
+                "score_breakdown": score_breakdown,
+                "updated_at": datetime.now(timezone.utc),
+            }
+            if status is not None:
+                update_data["status"] = status
+            updated_job = job.model_copy(update=update_data)
+            self._jobs[job_id] = updated_job
+            return updated_job
