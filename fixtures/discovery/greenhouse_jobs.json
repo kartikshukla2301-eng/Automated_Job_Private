@@ -1,0 +1,79 @@
+{
+  "jobs": [
+    {
+      "id": 1001,
+      "internal_job_id": 5001,
+      "title": "Senior Backend Engineer",
+      "updated_at": "2026-03-01T12:00:00Z",
+      "requisition_id": "REQ-1001",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/1001?gh_src=analytics_tracking",
+      "location": {
+        "name": "San Francisco, CA (Remote)"
+      },
+      "metadata": [
+        {
+          "id": 1,
+          "name": "Employment Type",
+          "value": "Full-Time",
+          "value_type": "single_select"
+        },
+        {
+          "id": 2,
+          "name": "Salary",
+          "value": 160000,
+          "value_type": "number"
+        }
+      ],
+      "content": "<p>Acme is seeking a <strong>Senior Backend Engineer</strong> to scale our distributed systems.</p><script>alert('malicious script');</script><p>Requirements: Python, PostgreSQL, Distributed Systems.</p>",
+      "departments": [
+        {
+          "id": 10,
+          "name": "Engineering"
+        }
+      ],
+      "offices": [
+        {
+          "id": 20,
+          "name": "HQ - San Francisco",
+          "location": "San Francisco, CA"
+        }
+      ]
+    },
+    {
+      "id": 1002,
+      "internal_job_id": 5002,
+      "title": "Frontend Engineer",
+      "updated_at": "2026-03-02T10:30:00Z",
+      "requisition_id": "REQ-1002",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/1002",
+      "location": {
+        "name": "New York, NY"
+      },
+      "metadata": [
+        {
+          "id": 1,
+          "name": "Employment Type",
+          "value": "Contract",
+          "value_type": "single_select"
+        }
+      ],
+      "content": "<p>Frontend Engineer to build delightful user interfaces with React and TypeScript.</p>",
+      "departments": [
+        {
+          "id": 10,
+          "name": "Engineering"
+        }
+      ],
+      "offices": [
+        {
+          "id": 21,
+          "name": "New York Office",
+          "location": "New York, NY"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 2
+  }
+}

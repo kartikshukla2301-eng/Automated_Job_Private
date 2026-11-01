@@ -111,16 +111,31 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
 - Implemented audit and traceability metadata generator with automatic redaction of sensitive and PII values (`build_audit_metadata`, `redact_sensitive_value`).
 - Upgraded `GreenhouseProvider` with optional `AnswerResolver` and `PolicyEngine` injection, resolving verified fields truthfully with profile fallback, enforcing policy approvals, and skipping sensitive fields.
 - Total test coverage: 148 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.1 complete: Greenhouse and Lever Job Discovery and Form Parsing Foundation (`worker/discovery/`, `worker/providers/`).
+  - Implemented strongly typed canonical `Job` model, `JobStatus` enum (matching database schema constraint `ck_jobs_status`), `SalaryInfo`, and `DiscoverySummary` in `worker/discovery/models.py`.
+  - Implemented deterministic normalization in `worker/discovery/normalization.py`: corporate legal entity stripping (`normalize_company`), lowercase/casing and symbol standardization (`normalize_title`), location bucketing (`normalize_location`), canonical URL normalization with tracking query parameter stripping (`normalize_url`), SHA-256 content hashing (`compute_content_hash`), and canonical Key 2 generation (`compute_canonical_key`).
+  - Implemented security boundaries and sanitization in `worker/discovery/security.py`: untrusted job description cleaning (`sanitize_job_description`) stripping dangerous blocks, scripts, and invisible/bidi characters while neutralizing delimiter breakout attempts; strictly bounded external HTTP hosts (`is_safe_discovery_url`) restricted to approved Greenhouse and Lever endpoints.
+  - Implemented `JobRepository` protocol and thread-safe `InMemoryJobRepository` in `worker/discovery/repository.py` enforcing `(platform, external_id)` unique constraint, canonical key indexing, and updated job detection via content hash changes while preserving immutable timestamps.
+  - Implemented `JobDiscoveryAdapter` protocol in `worker/providers/base.py`.
+  - Implemented `GreenhouseDiscoveryAdapter` in `worker/providers/greenhouse_discovery.py` fetching public board listings (`GET /v1/boards/{board_token}/jobs?content=true`), normalizing jobs, handling 404/429/5xx and timeouts, and parsing structured metadata and salaries without fabrication.
+  - Implemented `LeverDiscoveryAdapter` in `worker/providers/lever_discovery.py` fetching public postings (`GET /v0/postings/{company}`), handling pagination (`limit` & `skip`), normalizing categories, workplace types, and salary ranges.
+  - Implemented central `JobDiscoveryService` in `worker/discovery/service.py` coordinating provider adapters, ingestion, normalization, and deduplication against the repository without HTTP layer dependencies.
+  - Extended form inspection in `worker/providers/base.py` and `worker/providers/greenhouse.py`: enriched `FormField` with options, taxonomy classification (`FieldCategory`), policy rule (`PolicyType`), and `ResolutionStatus`.
+  - Added deterministic static HTML form parser `parse_greenhouse_form_html` in `worker/providers/greenhouse.py` for rapid offline fixture inspection.
+  - Connected form inspection to `AnswerResolver`, `PolicyEngine`, and `ProfileSnapshot`: sensitive fields strictly mapped to `SENSITIVE_SECURITY` and `NEVER_FILL` (`POLICY_BLOCKED`); unknown questions fail closed; matching answers with `ALWAYS_ASK` policy remain unapproved without explicit user review.
+  - Added discovery fixtures in `fixtures/discovery/greenhouse_jobs.json` and `fixtures/discovery/lever_postings.json`.
+  - Expanded automated backend test suite from 148 to 214 passing tests (+66 tests in `tests/test_job_models_and_normalization.py`, `tests/test_discovery_adapters.py`, `tests/test_job_repository.py`, `tests/test_discovery_service.py`, `tests/test_form_parsing_foundation.py`). All 2 frontend tests passing.
 
 ### In progress
-- None (Phase 1.0 complete).
+- None (Phase 1.1 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.0).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.1).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
+- Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
 
 ## Next steps
-1. Phase 1.1 / Job board discovery modules or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.2 / Job Matching and Scoring Foundation or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time

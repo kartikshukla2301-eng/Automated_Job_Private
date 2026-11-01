@@ -1,0 +1,64 @@
+[
+  {
+    "id": "lever-job-001",
+    "text": "Staff Platform Engineer",
+    "createdAt": 1772452800000,
+    "updatedAt": 1772452800000,
+    "hostedUrl": "https://jobs.lever.co/globex/lever-job-001?lever-source=newsletter",
+    "applyUrl": "https://jobs.lever.co/globex/lever-job-001/apply",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Infrastructure",
+      "location": "Bengaluru, India",
+      "team": "Core Platform",
+      "allLocations": ["Bengaluru, India"]
+    },
+    "workplaceType": "hybrid",
+    "description": "<div>Globex is looking for a Staff Platform Engineer to architect cloud infrastructure.</div>",
+    "descriptionPlain": "Globex is looking for a Staff Platform Engineer to architect cloud infrastructure.",
+    "lists": [
+      {
+        "text": "What You'll Do",
+        "content": "<ul><li>Build resilient microservices</li><li>Manage Kubernetes clusters</li></ul>"
+      },
+      {
+        "text": "Requirements",
+        "content": "<ul><li>8+ years backend experience</li><li>Proficiency in Go or Python</li></ul>"
+      }
+    ],
+    "additional": "<p>Competitive compensation and equity package included.</p>",
+    "additionalPlain": "Competitive compensation and equity package included.",
+    "salaryRange": {
+      "min": 3500000,
+      "max": 5000000,
+      "currency": "INR",
+      "interval": "per-year-salary"
+    }
+  },
+  {
+    "id": "lever-job-002",
+    "text": "Site Reliability Engineer",
+    "createdAt": 1772539200000,
+    "updatedAt": 1772539200000,
+    "hostedUrl": "https://jobs.lever.co/globex/lever-job-002",
+    "applyUrl": "https://jobs.lever.co/globex/lever-job-002/apply",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Infrastructure",
+      "location": "Remote",
+      "team": "Reliability",
+      "allLocations": ["Remote"]
+    },
+    "workplaceType": "remote",
+    "description": "<div>SRE role focused on uptime, observability, and automated incident recovery.</div>",
+    "descriptionPlain": "SRE role focused on uptime, observability, and automated incident recovery.",
+    "lists": [
+      {
+        "text": "Key Responsibilities",
+        "content": "<ul><li>Implement SLOs and SLIs</li><li>Automate operational runbooks</li></ul>"
+      }
+    ],
+    "additional": "",
+    "additionalPlain": ""
+  }
+]
