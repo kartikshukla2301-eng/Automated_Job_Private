@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 3.0 — UI Design System & Dashboard Shell
+- Built cohesive, accessible, premium light theme design system in `apps/web/src/components/ui/`: `Badge` (8 status variants), `Input`, `SearchInput` with clear button, `StatCard` with KPI metrics and trend pills, `PageHeader` with breadcrumbs and action slots, `Table` primitives, `Skeleton` loading states, `EmptyState` with action buttons, `ErrorState` with retry button, `Tabs` with badge counters, `Dialog` with accessible focus management, and `ChartContainer` with title and legend.
+- Implemented responsive application shell layout in `apps/web/src/components/layout/`:
+  - `Sidebar` covering all 12 navigation routes with collapsed/expanded modes, mobile slide-over drawer, and prominent L0 Dry-Run status banner.
+  - `Header` with live safety indicators (Kill Switch, Submit Gate Locked), notification bell, search shortcut, and user capsule.
+  - `AppLayout` wrapping sidebar, header, and content with `<React.Suspense>` boundary.
+- Built initial accessible pages across all 12 application routes: `/` (Overview), `/jobs`, `/jobs/[jobId]`, `/applications`, `/applications/[applicationId]`, `/approvals`, `/answer-bank`, `/profile`, `/resumes`, `/providers`, `/sessions`, `/automation`, `/analytics`, `/settings`.
+- Added unit tests in `apps/web/src/components/layout/sidebar.test.tsx` verifying route rendering and safety indicators.
+- Verified test suite: 5 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 2.9 — Release Governance & Certification
 - Completed comprehensive security and compliance re-audit across all 6 provider adapters, verifying fail-closed real submit barriers (`real_submit_gate_enabled = False`).
 - Verified zero credential persistence in session managers, strict SSRF/host allowlisting in `NavigationGuard`, and automatic PII redaction across all ledgers.
