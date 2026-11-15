@@ -1,5 +1,17 @@
 # Changelog
 
+## Phase 3.1 — API-Connected Overview Dashboard
+- Connected `apps/web/src/app/page.tsx` to `JobAgentAPIClient.getOverview()` and `/api/v1/dashboard/applications` endpoints.
+- Implemented real-time KPI card synchronization: Jobs Discovered, Matched & Eligible, Pending Approval, and Dry-Runs Completed.
+- Implemented live safety boundary monitoring: Real-Submit Gate (strictly LOCKED DISABLED), Kill Switch status (Normal vs TRIPPED), Active Daily Cap (2/2 apps S0 locked), and IST operational window (09:00–23:00).
+- Implemented 6-provider operational health indicators (Greenhouse, Lever, Ashby, Naukri, Wellfound, and LinkedIn capped at L1).
+- Built graceful fallback and connectivity management:
+  - Skeleton loading states while synchronizing.
+  - Offline Demo Mode alert banner with live retry connection trigger when backend is unreachable.
+  - Live connected status banner with manual sync trigger when connected.
+- Added comprehensive unit tests in `apps/web/src/app/page.test.tsx` verifying live response rendering, fallback demo mode, and retry capability.
+- Verified test suite: 7 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.0 — UI Design System & Dashboard Shell
 - Built cohesive, accessible, premium light theme design system in `apps/web/src/components/ui/`: `Badge` (8 status variants), `Input`, `SearchInput` with clear button, `StatCard` with KPI metrics and trend pills, `PageHeader` with breadcrumbs and action slots, `Table` primitives, `Skeleton` loading states, `EmptyState` with action buttons, `ErrorState` with retry button, `Tabs` with badge counters, `Dialog` with accessible focus management, and `ChartContainer` with title and legend.
 - Implemented responsive application shell layout in `apps/web/src/components/layout/`:
