@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 3.8 — End-to-End QA, Accessibility & UX Hardening
+- Authored comprehensive end-to-end user workflow test suite in `apps/web/src/app/e2e-workflow.test.tsx` testing 5 full user journeys:
+  - User Journey 1: Overview Dashboard KPI inspection, live backend status verification, navigation to Job Queue, and multi-parameter filtering.
+  - User Journey 2: Human-in-the-Loop Approval Queue review, application fit examination, approval confirmation dialog, and optimistic UI removal upon queue clearance.
+  - User Journey 3: Automation & Safety Control Center emergency kill switch engagement, reason logging, and Real-Submit Gate locked invariant verification.
+  - User Journey 4: Analytics conversion funnel verification ensuring 0 live submissions and 0 wrong sensitive answers invariants are strictly maintained.
+  - User Journey 5: Accessibility and keyboard navigation audit verifying `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-label` close buttons, and ESC key dismissal.
+- Hardened offline build resilience by replacing external Google Fonts HTTP dependency in `apps/web/src/app/layout.tsx` and `apps/web/src/app/globals.css` with a high-performance native system font stack.
+- Verified complete test pass: 34 frontend tests passed (100%), 440 backend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build clean across all 17 routes.
+
 ## Phase 3.7 — Analytics & Outcome Dashboard
 - Enhanced `apps/web/src/app/analytics/page.tsx` with live API-driven telemetry and historical analytics:
   - Connected directly to `apiClient.getAnalytics()` (`GET /api/v1/dashboard/analytics`) with skeleton loading and offline fallback resilience.
