@@ -216,3 +216,8 @@
   - Standardized `APIErrorResponse` and pagination envelopes, eliminating raw stack trace leakage.
   - Added dedicated liveness (`/health/live`) and readiness (`/health/ready`) probes.
   - Expanded automated backend test suite from 410 to 415 passing tests (+5 comprehensive Phase 2.3 tests in `tests/test_api_security_hardening.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 2.4: Implemented Dashboard API & Product Data Integration Foundation (`services/api/routes/dashboard.py`, `apps/web/src/types/api.ts`, `apps/web/src/lib/api-client.ts`, `tests/`) per locked architecture Section 14.
+  - Implemented scoped REST dashboard endpoints (`GET /api/v1/dashboard/overview`, `/applications`, `/approvals`, `/applications/{id}`, `/applications/{id}/timeline`, `/analytics`, `POST /api/v1/dashboard/profile/sync`) with strict user ownership and role authorization.
+  - Exposed real stored overview metrics, conversion funnel stages (discovered, matched, eligible, ready, awaiting_approval, filling, dry_run_done), and provider health without value fabrication.
+  - Created strongly typed TypeScript domain interfaces (`apps/web/src/types/api.ts`) and modern async API client (`apps/web/src/lib/api-client.ts`) with Bearer token authentication, correlation ID propagation, and standard error handling.
+  - Expanded automated backend test suite from 415 to 417 passing tests (+2 comprehensive Phase 2.4 tests in `tests/test_dashboard_api.py`). All 2 frontend unit tests and ESLint checks passing.

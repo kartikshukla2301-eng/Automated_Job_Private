@@ -90,7 +90,7 @@ def get_caps_enforcer(
     ledger: ApplicationLedger = Depends(get_application_ledger),
 ) -> CapsEnforcer:
     """Provide CapsEnforcer configured with application settings and ledger."""
-    return CapsEnforcer(caps_config=app_settings.caps, ledger=ledger)
+    return CapsEnforcer(config=app_settings.caps, ledger=ledger)
 
 
 def get_safety_engine(

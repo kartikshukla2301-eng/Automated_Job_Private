@@ -1,0 +1,118 @@
+/**
+ * Typed API Client for AI Job Application Agent (Phase 2.4).
+ *
+ * Implements standard headers, user JWT forwarding, and error envelope handling.
+ */
+
+import type {
+  ApplicationItem,
+  DashboardOverview,
+  FunnelAnalytics,
+  PaginatedApplications,
+  ProfileSyncResponse,
+  TimelineEvent,
+} from "../types/api";
+
+export class APIClientError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public correlationId?: string
+  ) {
+    super(message);
+    this.name = "APIClientError";
+  }
+}
+
+export class JobAgentAPIClient {
+  private baseUrl: string;
+  private token?: string;
+
+  constructor(baseUrl: string = "http://127.0.0.1:8000", token?: string) {
+    this.baseUrl = baseUrl.replace(/\/$/, "");
+    this.token = token;
+  }
+
+  public setToken(token: string): void {
+    this.token = token;
+  }
+
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${path}`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      let errMessage = `HTTP Error ${response.status}`;
+      let errCode = "api_error";
+      let corrId: string | undefined = response.headers.get("X-Request-ID") ?? undefined;
+
+      try {
+        const body = await response.json();
+        if (body.detail) errMessage = body.detail;
+        if (body.error) errCode = body.error;
+        if (body.correlation_id) corrId = body.correlation_id;
+      } catch {
+        // Fallback to text
+      }
+
+      throw new APIClientError(response.status, errCode, errMessage, corrId);
+    }
+
+    return response.json() as Promise<T>;
+  }
+
+  public async getOverview(): Promise<DashboardOverview> {
+    return this.request<DashboardOverview>("/api/v1/dashboard/overview");
+  }
+
+  public async getApplications(params?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<PaginatedApplications> {
+    const query = new URLSearchParams();
+    if (params?.status) query.set("status", params.status);
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.request<PaginatedApplications>(`/api/v1/dashboard/applications${qs}`);
+  }
+
+  public async getApprovals(): Promise<ApplicationItem[]> {
+    return this.request<ApplicationItem[]>("/api/v1/dashboard/approvals");
+  }
+
+  public async getApplicationDetail(id: string): Promise<ApplicationItem> {
+    return this.request<ApplicationItem>(`/api/v1/dashboard/applications/${id}`);
+  }
+
+  public async getApplicationTimeline(id: string): Promise<TimelineEvent[]> {
+    return this.request<TimelineEvent[]>(`/api/v1/dashboard/applications/${id}/timeline`);
+  }
+
+  public async getAnalytics(): Promise<FunnelAnalytics> {
+    return this.request<FunnelAnalytics>("/api/v1/dashboard/analytics");
+  }
+
+  public async syncProfile(): Promise<ProfileSyncResponse> {
+    return this.request<ProfileSyncResponse>("/api/v1/dashboard/profile/sync", {
+      method: "POST",
+    });
+  }
+}
+
+export const apiClient = new JobAgentAPIClient();
