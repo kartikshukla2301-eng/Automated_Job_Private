@@ -8,6 +8,7 @@ from services.api.logging_config import RequestCorrelationMiddleware, setup_logg
 from services.api.routes.applications import router as applications_router
 from services.api.routes.dry_run import router as dry_run_router
 from services.api.routes.ops import router as ops_router
+from services.api.routes.pilot import router as pilot_router
 from services.api.schemas import HealthResponse
 from worker.application.exceptions import (
     ApprovalRequiredError,
@@ -80,6 +81,7 @@ def create_app(app_settings: Settings = settings) -> FastAPI:
     app.include_router(dry_run_router)
     app.include_router(applications_router)
     app.include_router(ops_router)
+    app.include_router(pilot_router)
 
     @app.get(
         "/health",
