@@ -174,3 +174,13 @@
   - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit `wellfound.com`, `www.wellfound.com`, `angel.co`, `ashbyhq.com`, `jobs.ashbyhq.com`, and `api.ashbyhq.com`.
   - Implemented central `ProviderRegistry` (`worker/providers/registry.py`) providing unified management of provider metadata, discovery adapters, execution providers, and automatic provider detection from job URLs.
   - Expanded automated backend test suite from 364 to 377 passing tests (+13 comprehensive Phase 1.7 tests across `tests/test_wellfound_provider.py`, `tests/test_ashby_provider.py`, and `tests/test_provider_registry.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 1.8: Implemented Restricted LinkedIn Provider Foundation (`worker/providers/linkedin.py`, `worker/ops/autonomy.py`, `docs/PROVIDER_STATUS.md`, `tests/`) per locked architecture Section 9, Section 10, Section 11, and Section 12.
+  - Implemented `LinkedInSessionManager` managing authenticated session cookies in `worker/sessions/linkedin/cookies.json` with strict password/secret rejection and 14-day expiry TTL.
+  - Implemented `detect_security_checkpoint_or_wall` halting execution immediately upon encountering login walls (`/authwall`, `/login`) or CAPTCHA/bot challenges without evasion or bypass attempts.
+  - Implemented `LinkedInDiscoveryAdapter` for normalized Easy Apply job ingestion, URL tracking parameter sanitization, and already-applied status detection.
+  - Implemented `LinkedInProvider` supporting Playwright Easy Apply form inspection and L0 dry-run execution while rejecting real submissions.
+  - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit `linkedin.com` and `www.linkedin.com`.
+  - Registered LinkedIn in `ProviderRegistry` and exported in `worker/providers/__init__.py`.
+  - Enforced restricted provider autonomy in `AutonomyController` strictly capping LinkedIn at L1 autonomy and blocking promotion to L2 or L3.
+  - Authored authoritative `docs/PROVIDER_STATUS.md` documenting rollout status, risk tiers, authentication models, and autonomy limits across all 6 providers.
+  - Expanded automated backend test suite from 377 to 385 passing tests (+8 comprehensive Phase 1.8 tests in `tests/test_linkedin_provider.py`). All 2 frontend unit tests and ESLint checks passing.

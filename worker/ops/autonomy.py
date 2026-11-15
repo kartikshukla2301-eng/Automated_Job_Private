@@ -59,6 +59,9 @@ class AutonomyController:
             "greenhouse": AutonomyLevel.L0,
             "lever": AutonomyLevel.L0,
             "naukri": AutonomyLevel.L0,
+            "wellfound": AutonomyLevel.L0,
+            "ashby": AutonomyLevel.L0,
+            "linkedin": AutonomyLevel.L0,
         }
 
     def get_level(self, provider: str) -> AutonomyLevel:
@@ -67,6 +70,8 @@ class AutonomyController:
     def set_level_by_owner(self, provider: str, level: AutonomyLevel, actor: str = "owner") -> None:
         """Owner explicitly authorizes a level change."""
         prov = provider.lower()
+        if prov == "linkedin" and level in (AutonomyLevel.L2, AutonomyLevel.L3):
+            raise ValueError("LinkedIn is a restricted provider: maximum permitted autonomy level is L1")
         old_level = self.get_level(prov)
         self._provider_levels[prov] = level
         logger.info(
@@ -141,6 +146,9 @@ class AutonomyController:
                 duplicate_applications_count=duplicate_count,
                 missing_requirements=["Already at highest autonomy level (L3)"],
             )
+
+        if prov == "linkedin" and target in (AutonomyLevel.L2, AutonomyLevel.L3):
+            blocking.append("LinkedIn is restricted: capped at L1 autonomy and prohibited from L2/L3 promotion")
 
         if total_apps_at_level < 30:
             missing.append(f"Requires >= 30 applications at {current.value} (currently {total_apps_at_level})")

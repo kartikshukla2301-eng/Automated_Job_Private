@@ -31,6 +31,8 @@ DEFAULT_ALLOWED_DOMAINS: Set[str] = {
     "angel.co",
     "ashbyhq.com",
     "jobs.ashbyhq.com",
+    "linkedin.com",
+    "www.linkedin.com",
 }
 
 DISALLOWED_SCHEMES: Set[str] = {

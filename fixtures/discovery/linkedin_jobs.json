@@ -1,0 +1,30 @@
+{
+  "jobs": [
+    {
+      "id": "li-9801",
+      "title": "Senior Distributed Systems Engineer",
+      "company": "ScaleOps Technologies",
+      "location": "Bangalore, Karnataka, India",
+      "is_remote": true,
+      "employment_type": "Full-time",
+      "easy_apply": true,
+      "posted_date": "2026-03-01T10:00:00Z",
+      "url": "https://www.linkedin.com/jobs/view/9801-senior-distributed-systems-engineer?trk=public_jobs",
+      "description": "<p>ScaleOps is hiring a Senior Distributed Systems Engineer to design resilient real-time backend pipelines in Python and Go.</p>",
+      "already_applied": false
+    },
+    {
+      "id": "li-9802",
+      "title": "Lead Cloud Infrastructure Engineer",
+      "company": "Enterprise Cloud",
+      "location": "Hyderabad, Telangana, India",
+      "is_remote": false,
+      "employment_type": "Full-time",
+      "easy_apply": true,
+      "posted_date": "2026-02-28T09:00:00Z",
+      "url": "https://www.linkedin.com/jobs/view/9802-lead-cloud-infrastructure-engineer",
+      "description": "<p>Build multi-cloud infrastructure and lead SRE initiatives across AWS and GCP.</p>",
+      "already_applied": true
+    }
+  ]
+}

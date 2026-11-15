@@ -107,6 +107,7 @@ def create_default_registry() -> ProviderRegistry:
     from worker.providers.naukri import NaukriDiscoveryAdapter, NaukriProvider
     from worker.providers.wellfound import WellfoundDiscoveryAdapter, WellfoundProvider
     from worker.providers.ashby import AshbyDiscoveryAdapter, AshbyProvider
+    from worker.providers.linkedin import LinkedInDiscoveryAdapter, LinkedInProvider
 
     registry = ProviderRegistry()
 
@@ -178,6 +179,20 @@ def create_default_registry() -> ProviderRegistry:
         ),
         provider=AshbyProvider(),
         discovery_adapter=AshbyDiscoveryAdapter(),
+    )
+
+    # LinkedIn (Restricted Provider)
+    registry.register(
+        metadata=ProviderMetadata(
+            name="linkedin",
+            display_name="LinkedIn",
+            auth_required=True,
+            supported_domains=["linkedin.com", "www.linkedin.com"],
+            has_discovery=True,
+            has_form_inspection=True,
+        ),
+        provider=LinkedInProvider(),
+        discovery_adapter=LinkedInDiscoveryAdapter(),
     )
 
     return registry

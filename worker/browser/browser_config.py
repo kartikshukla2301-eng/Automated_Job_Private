@@ -36,6 +36,8 @@ class BrowserConfig(BaseModel):
             "angel.co",
             "ashbyhq.com",
             "jobs.ashbyhq.com",
+            "linkedin.com",
+            "www.linkedin.com",
         ],
         description="Explicit list of approved job board application domains",
     )

@@ -185,19 +185,29 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit Wellfound and Ashby domains.
   - Implemented central `ProviderRegistry` (`worker/providers/registry.py`) providing unified management across Greenhouse, Lever, Naukri, Wellfound, and Ashby.
   - Total test coverage: 377 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.8 complete: Restricted LinkedIn Provider Foundation.
+  - Implemented `LinkedInSessionManager` managing persistent manual session cookies in `worker/sessions/linkedin/cookies.json` with strict password rejection and 14-day expiry TTL.
+  - Implemented `detect_security_checkpoint_or_wall` halting execution immediately upon encountering login walls (`/authwall`, `/login`) or CAPTCHA/bot challenges without stealth attempts.
+  - Implemented `LinkedInDiscoveryAdapter` for normalized Easy Apply job ingestion, URL tracking parameter sanitization, and already-applied status detection.
+  - Implemented `LinkedInProvider` supporting Playwright Easy Apply form inspection and L0 dry-run execution while rejecting real submissions.
+  - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit `linkedin.com` and `www.linkedin.com`.
+  - Registered LinkedIn in `ProviderRegistry` and exported in `worker/providers/__init__.py`.
+  - Enforced restricted provider autonomy in `AutonomyController` strictly capping LinkedIn at L1 autonomy and blocking promotion to L2 or L3.
+  - Authored authoritative `docs/PROVIDER_STATUS.md` documenting rollout status across all 6 providers.
+  - Total test coverage: 385 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 1.7 complete; proceeding to Phase 1.8).
+- None (Phase 1.8 complete; proceeding to Phase 1.9).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.7).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.8).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
-- Live Greenhouse, Lever, Naukri, Wellfound, and Ashby external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
+- Live Greenhouse, Lever, Naukri, Wellfound, Ashby, and LinkedIn external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.8: Restricted LinkedIn Provider Foundation.
+1. Phase 1.9: DevLeveler Profile Integration & Resume Intelligence.
 
 ## End-of-session handoff template
 - Task and date/time

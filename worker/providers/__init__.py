@@ -30,6 +30,14 @@ from worker.providers.ashby import (
     AshbyDiscoveryAdapter,
     AshbyProvider,
 )
+from worker.providers.linkedin import (
+    LinkedInDiscoveryAdapter,
+    LinkedInLoginWallError,
+    LinkedInProvider,
+    LinkedInSecurityCheckpointError,
+    LinkedInSessionManager,
+    LinkedInSessionStatus,
+)
 from worker.providers.registry import (
     ProviderMetadata,
     ProviderRegistrationError,
@@ -55,6 +63,12 @@ __all__ = [
     "WellfoundSessionStatus",
     "AshbyDiscoveryAdapter",
     "AshbyProvider",
+    "LinkedInDiscoveryAdapter",
+    "LinkedInLoginWallError",
+    "LinkedInProvider",
+    "LinkedInSecurityCheckpointError",
+    "LinkedInSessionManager",
+    "LinkedInSessionStatus",
     "ProviderMetadata",
     "ProviderRegistrationError",
     "ProviderRegistry",

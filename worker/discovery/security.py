@@ -27,6 +27,8 @@ ALLOWED_DISCOVERY_HOSTS: Set[str] = {
     "ashbyhq.com",
     "jobs.ashbyhq.com",
     "api.ashbyhq.com",
+    "linkedin.com",
+    "www.linkedin.com",
 }
 
 # Regex to strip HTML script, style, and iframe blocks along with their contents
