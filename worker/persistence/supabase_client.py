@@ -105,6 +105,45 @@ class SupabaseClient:
                 details=details,
             )
 
+    def translate_error(
+        self,
+        status_code: int,
+        error_data: Optional[Dict[str, Any]] = None,
+        action_desc: str = "query",
+    ) -> DatabaseError:
+        """Translate HTTP status code and PostgREST payload into a typed DatabaseError exception."""
+        err_dict = error_data or {}
+        msg = err_dict.get("message") or err_dict.get("error") or f"HTTP {status_code}"
+        code = err_dict.get("code")
+        details = err_dict.get("details") or err_dict.get("hint")
+        if status_code == 409 or (code and code.startswith("23505")):
+            return DuplicateRecordError(
+                f"Duplicate record conflict during {action_desc}: {msg}",
+                code=code,
+                details=details,
+            )
+        elif status_code in (401, 403):
+            return AuthorizationError(
+                f"Unauthorized or RLS permission denied during {action_desc}: {msg}",
+                code=code,
+                details=details,
+            )
+        elif status_code == 404:
+            return RecordNotFoundError(
+                f"Resource not found during {action_desc}: {msg}",
+                code=code,
+                details=details,
+            )
+        elif status_code in (500, 502, 503, 504):
+            return DatabaseConnectionError(
+                f"Database connection error ({status_code}) during {action_desc}: {msg}"
+            )
+        return DatabaseError(
+            f"Database error ({status_code}) during {action_desc}: {msg}",
+            code=code,
+            details=details,
+        )
+
     async def select(
         self,
         table: str,

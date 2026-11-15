@@ -1,5 +1,13 @@
 # Changelog
 
+## Phase 2.8 — Performance, Reliability & Scale Validation
+- Implemented performance, concurrency, and failure injection suite in `tests/test_scale_and_resilience.py`.
+- Benchmarked matching engine (< 70ms for 50 jobs) and health probe latency (< 15ms).
+- Verified concurrent application creation idempotency resolving to a single database record without race conditions.
+- Verified PostgREST database error translation into typed exceptions without credential leakage (`worker/persistence/supabase_client.py`).
+- Authored `docs/CAPACITY_REPORT.md` documenting throughput, latency percentiles, memory profiles, and capacity ramp stages (S0->S1->S2->S3) while strictly preserving active daily cap of 2.
+- Added unit tests in `tests/test_scale_and_resilience.py`; 440 backend tests passed, 2 frontend tests passed, ESLint clean.
+
 ## Phase 2.7 — L1 Supervised Execution Preparation
 - Implemented `SupervisedExecutionSimulator` and `PreSubmissionSimulationReport` in `worker/application/supervised.py`.
 - Enforced pre-submission verification of kill switch, rate caps, provider health, answer freshness, and sensitive field policies, strictly halting execution before any submit action.
