@@ -97,6 +97,20 @@ def create_app(app_settings: Settings = settings) -> FastAPI:
             environment=active_settings.app_env,
         )
 
+    @app.get("/health/live", summary="Liveness Probe")
+    async def get_liveness():
+        """Kubernetes/Container/Process liveness probe."""
+        return {"status": "alive", "service": "job-agent-api"}
+
+    @app.get("/health/ready", summary="Readiness Probe")
+    async def get_readiness(active_settings: Settings = Depends(get_settings)):
+        """Readiness probe verifying API server and configuration readiness."""
+        return {
+            "status": "ready",
+            "service": "job-agent-api",
+            "real_submit_gate_locked": not active_settings.real_submit_gate_enabled,
+        }
+
     return app
 
 

@@ -235,3 +235,31 @@ class ReadinessReportResponse(BaseModel):
     summary: str
     criteria: List[Dict[str, Any]]
 
+
+class APIErrorResponse(BaseModel):
+    """Standardized error envelope preventing internal credential or stack trace exposure."""
+
+    error: str = Field(..., description="Short error code identifier")
+    detail: str = Field(..., description="Human-readable explanation")
+    correlation_id: Optional[str] = Field(default=None, description="Request correlation tracking ID")
+    timestamp: str = Field(..., description="UTC timestamp of error")
+    code: Optional[str] = Field(default=None, description="Detailed domain or PostgreSQL error code")
+
+
+class PaginationParams(BaseModel):
+    """Standard pagination query parameters."""
+
+    limit: int = Field(default=50, ge=1, le=200, description="Page limit")
+    offset: int = Field(default=0, ge=0, description="Offset for pagination")
+
+
+class PaginatedListResponse(BaseModel):
+    """Generic envelope for paginated lists."""
+
+    items: List[Dict[str, Any]] = Field(default_factory=list)
+    total: int = Field(default=0, ge=0)
+    limit: int = Field(default=50)
+    offset: int = Field(default=0)
+    has_more: bool = Field(default=False)
+
+

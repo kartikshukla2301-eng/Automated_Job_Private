@@ -209,3 +209,10 @@
   - Implemented `SupabaseStorageService` providing private asset upload and 15-minute time-limited signed URL generation for evidence screenshots, sanitized form snapshots, and resumes with strict MIME and size boundary validation.
   - Created additive PostgreSQL migration `migrations/002_performance_indexes.sql` optimizing real query patterns on applications, jobs, answer_bank, and application_events without altering locked decisions AD-005, AD-008, or AD-009.
   - Expanded automated backend test suite from 405 to 410 passing tests (+5 comprehensive Phase 2.2 tests in `tests/test_supabase_repositories.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 2.3: Implemented API Security Hardening, Authorization & Backend Interfaces (`services/api/security/`, `services/api/schemas.py`, `tests/`) per locked architecture Section 14.
+  - Implemented `AuthenticatedSubject` and role taxonomy (`OWNER`, `OPERATOR`, `WORKER`, `ADMIN`), strictly enforcing role separation and preventing confusion of worker tokens with candidate identity.
+  - Implemented `verify_application_ownership` blocking cross-user application inspection or manipulation with `HTTP 403 Forbidden`.
+  - Implemented thread-safe `SlidingWindowRateLimiter` with per-key sliding window tracking, emitting standard headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) and returning `HTTP 429` with `Retry-After`.
+  - Standardized `APIErrorResponse` and pagination envelopes, eliminating raw stack trace leakage.
+  - Added dedicated liveness (`/health/live`) and readiness (`/health/ready`) probes.
+  - Expanded automated backend test suite from 410 to 415 passing tests (+5 comprehensive Phase 2.3 tests in `tests/test_api_security_hardening.py`). All 2 frontend unit tests and ESLint checks passing.

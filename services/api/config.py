@@ -145,6 +145,10 @@ class Settings(BaseSettings):
         default=False,
         description="Explicit flag permitting unauthenticated worker actions in development/test environments on localhost only",
     )
+    real_submit_gate_enabled: bool = Field(
+        default=False,
+        description="Non-negotiable safety invariant: real form submissions are strictly disabled",
+    )
 
     openrouter_api_key: Optional[str] = Field(
         default=None, description="OpenRouter API Key for runtime LLM gateway"
