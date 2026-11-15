@@ -8,7 +8,9 @@ import type {
   ApplicationItem,
   DashboardOverview,
   FunnelAnalytics,
+  JobDetailItem,
   PaginatedApplications,
+  PaginatedJobs,
   ProfileSyncResponse,
   TimelineEvent,
 } from "../types/api";
@@ -106,6 +108,29 @@ export class JobAgentAPIClient {
 
   public async getAnalytics(): Promise<FunnelAnalytics> {
     return this.request<FunnelAnalytics>("/api/v1/dashboard/analytics");
+  }
+
+  public async getJobs(params?: {
+    search?: string;
+    platform?: string;
+    minScore?: number;
+    workMode?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<PaginatedJobs> {
+    const query = new URLSearchParams();
+    if (params?.search) query.set("search", params.search);
+    if (params?.platform) query.set("platform", params.platform);
+    if (params?.minScore) query.set("min_score", String(params.minScore));
+    if (params?.workMode) query.set("work_mode", params.workMode);
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.request<PaginatedJobs>(`/api/v1/dashboard/jobs${qs}`);
+  }
+
+  public async getJobDetail(id: string): Promise<JobDetailItem> {
+    return this.request<JobDetailItem>(`/api/v1/dashboard/jobs/${id}`);
   }
 
   public async syncProfile(): Promise<ProfileSyncResponse> {

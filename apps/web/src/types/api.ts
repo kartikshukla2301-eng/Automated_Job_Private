@@ -79,6 +79,54 @@ export interface ProfileSyncResponse {
   synced_at: string;
 }
 
+export interface MatchDimension {
+  name: string;
+  score: number;
+  weight: number;
+  detail: string;
+}
+
+export interface HardGateResult {
+  name: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface JobItem {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  work_mode: "Remote" | "Hybrid" | "On-site";
+  platform: string;
+  external_id: string;
+  canonical_url: string;
+  employment_type: string;
+  salary_range?: string | null;
+  match_score: number;
+  hard_gates_passed: boolean;
+  discovered_at: string;
+  description?: string;
+  required_skills?: string[];
+}
+
+export interface JobDetailItem extends JobItem {
+  dimensions: MatchDimension[];
+  hard_gates: HardGateResult[];
+  required_skills: string[];
+  preferred_skills: string[];
+  raw_description: string;
+  content_hash: string;
+}
+
+export interface PaginatedJobs {
+  items: JobItem[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
 export interface APIError {
   error: string;
   detail: string;

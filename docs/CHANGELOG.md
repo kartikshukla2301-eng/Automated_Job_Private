@@ -1,5 +1,23 @@
 # Changelog
 
+## Phase 3.2 — Job Discovery & Matching Workspace
+- Implemented strongly typed Job domain models (`JobItem`, `MatchDimension`, `HardGateResult`, `JobDetailItem`, `PaginatedJobs`) in `apps/web/src/types/api.ts`.
+- Extended `JobAgentAPIClient` with `getJobs()` and `getJobDetail(jobId)` methods in `apps/web/src/lib/api-client.ts`.
+- Implemented rich Job Discovery & Queue workspace in `apps/web/src/app/jobs/page.tsx`:
+  - Real-time search across job titles, company names, and technical skills.
+  - Multi-select filters for Platform (Greenhouse, Lever, Ashby, Naukri, Wellfound, LinkedIn), Work Mode (Remote, Hybrid, On-site), and Minimum Score.
+  - Active filter chips with individual and global dismissal triggers.
+  - Sorting by match score (high to low), discovery timestamp (newest), and company name.
+  - Summary KPI cards for Total Jobs, High Matches (>=80%), Eligible Jobs (>=65%), and Hard Gates Passed.
+  - Clean SaaS table with skill tags, color-coded score progress pills, hard gate pass indicators, and direct links to canonical ATS postings.
+- Implemented transparent Job Detail & Match Explanation page in `apps/web/src/app/jobs/[jobId]/page.tsx`:
+  - Complete 6-dimension match breakdown enforcing locked architecture weights: Required Skills (30%), Role Relevance (20%), Experience Fit (15%), Preferred Skills (15%), Location Fit (10%), and Project Evidence (10%).
+  - Hard eligibility checklist displaying 5 deterministic gate results (Location, 90-Day Cooldown, Blocklist, Daily Cap, Seniority Ceiling).
+  - Sanitized job description and verified skill chips.
+  - L0 Dry-run execution trigger modal with explicit warning that live form submission is permanently locked disabled.
+- Added comprehensive unit tests in `apps/web/src/app/jobs/jobs.test.tsx` verifying job discovery rendering, search filtering, platform filtering, and 6-dimension breakdown.
+- Verified test suite: 11 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.1 — API-Connected Overview Dashboard
 - Connected `apps/web/src/app/page.tsx` to `JobAgentAPIClient.getOverview()` and `/api/v1/dashboard/applications` endpoints.
 - Implemented real-time KPI card synchronization: Jobs Discovered, Matched & Eligible, Pending Approval, and Dry-Runs Completed.
