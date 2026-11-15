@@ -203,18 +203,26 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Implemented `OutcomeTracker` and scoped FastAPI endpoints (`POST /api/v1/applications/{id}/outcomes`, `GET /api/v1/applications/{id}/outcomes`) for tracking interview and offer milestones.
   - Total test coverage: 395 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
+- Phase 2.0 complete: Production Readiness & Release Candidate.
+  - Implemented comprehensive security audit suite (`tests/test_security_audit.py`) verifying fail-closed real submit barriers across all 6 providers, password/secret rejection in session managers, SSRF/loopback/traversal blocking in `NavigationGuard`, prompt injection sanitization, and PII redaction.
+  - Implemented full 11-step end-to-end integration test (`tests/test_end_to_end_l0_pipeline.py`) simulating complete lifecycle execution: profile ingestion, job discovery, matching, lifecycle state transitions, human approval, form inspection, L0 dry-run form execution via central orchestrator, real submit barrier verification, and post-application outcome tracking.
+  - Hardcoded non-negotiable safety invariant `real_submit_gate_enabled = False` across all providers and runtime components.
+  - Authored complete operational documentation suite: updated root `README.md`, native Windows setup guide `docs/INSTALLATION.md`, configuration reference `docs/CONFIGURATION.md`, security posture guide `docs/SECURITY.md`, daily operator guide `docs/OPERATIONS_RUNBOOK.md`, disaster recovery runbook `docs/RECOVERY_RUNBOOK.md`, and locked architecture gate evaluation `docs/RELEASE_READINESS.md`.
+  - Total test coverage: 401 backend tests passing (pytest), 2 frontend tests passing (Vitest), ESLint clean.
+
 ### In progress
-- None (Phase 1.9 complete; proceeding to Phase 2.0).
+- None (Phases 1.5 through 2.0 fully completed, tested, and certified).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.9).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–2.0).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
 - Live Greenhouse, Lever, Naukri, Wellfound, Ashby, and LinkedIn external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 2.0: Production Readiness & Release Candidate.
+1. Deploy L0 Release Candidate in local operator staging environment.
+2. Execute 20 live dry-run form inspections under human operator review to satisfy Criterion G-04 before considering Autonomy Level L1.
 
 ## End-of-session handoff template
 - Task and date/time

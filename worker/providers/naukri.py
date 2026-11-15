@@ -318,3 +318,9 @@ class NaukriProvider(JobProvider):
             success=not has_challenge,
             error_message="Manual CAPTCHA challenge detected" if has_challenge else None,
         )
+
+    async def submit_application(self, page: Any) -> bool:
+        """Submission is strictly disabled by non-negotiable safety invariant."""
+        raise RealSubmitGateBlockedError(
+            "Real submission is permanently disabled: real_submit_gate_enabled = False"
+        )

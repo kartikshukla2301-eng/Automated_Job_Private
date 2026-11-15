@@ -574,3 +574,9 @@ class GreenhouseProvider(JobProvider):
                 success=False,
                 error_message=str(exc),
             )
+
+    async def submit_application(self, page: Any) -> bool:
+        """Submission is strictly disabled by non-negotiable safety invariant."""
+        raise RealSubmitGateBlockedError(
+            "Real submission is permanently disabled: real_submit_gate_enabled = False"
+        )
