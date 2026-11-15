@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Senior Frontend Engineer at Example Lever Co - Application</title>
+</head>
+<body>
+  <div class="application-page">
+    <div class="posting-header">
+      <h2>Senior Frontend Engineer</h2>
+      <div class="posting-categories">
+        <span>Engineering</span> / <span>Remote</span>
+      </div>
+    </div>
+
+    <form id="lever-form" action="/apply" method="POST">
+      <!-- Basic Information -->
+      <div class="form-group">
+        <label for="name">Full Name <span class="required">*</span></label>
+        <input type="text" id="name" name="name" required placeholder="Jane Doe">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email <span class="required">*</span></label>
+        <input type="email" id="email" name="email" required placeholder="jane@example.com">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone <span class="required">*</span></label>
+        <input type="tel" id="phone" name="phone" required placeholder="+1-555-0100">
+      </div>
+
+      <div class="form-group">
+        <label for="org">Current company</label>
+        <input type="text" id="org" name="org" placeholder="Acme Corp">
+      </div>
+
+      <!-- Links -->
+      <div class="form-group">
+        <label for="urls[LinkedIn]">LinkedIn URL</label>
+        <input type="url" id="urls[LinkedIn]" name="urls[LinkedIn]" placeholder="https://linkedin.com/in/...">
+      </div>
+
+      <div class="form-group">
+        <label for="urls[GitHub]">GitHub URL</label>
+        <input type="url" id="urls[GitHub]" name="urls[GitHub]" placeholder="https://github.com/...">
+      </div>
+
+      <div class="form-group">
+        <label for="urls[Portfolio]">Portfolio URL</label>
+        <input type="url" id="urls[Portfolio]" name="urls[Portfolio]" placeholder="https://myportfolio.dev">
+      </div>
+
+      <!-- Dropdown Select -->
+      <div class="form-group">
+        <label for="work_authorization">Are you legally authorized to work in the US? <span class="required">*</span></label>
+        <select id="work_authorization" name="work_authorization" required>
+          <option value="">Select an option</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <!-- Radio Group -->
+      <div class="form-group">
+        <fieldset>
+          <legend>Are you open to hybrid work? <span class="required">*</span></legend>
+          <label>
+            <input type="radio" name="relocation" value="yes" required> Yes, I am open to hybrid
+          </label>
+          <label>
+            <input type="radio" name="relocation" value="no" required> No, remote only
+          </label>
+        </fieldset>
+      </div>
+
+      <!-- Textarea Custom Question -->
+      <div class="form-group">
+        <label for="comments">Additional Information</label>
+        <textarea id="comments" name="comments" placeholder="Add any details you'd like to share"></textarea>
+      </div>
+
+      <!-- Checkbox -->
+      <div class="form-group">
+        <label for="consent">
+          <input type="checkbox" id="consent" name="consent" required>
+          I agree to the processing of my personal data <span class="required">*</span>
+        </label>
+      </div>
+
+      <!-- Sensitive / Blocked Fields -->
+      <div class="form-group">
+        <label for="resume">Resume / CV</label>
+        <input type="file" id="resume" name="resume">
+      </div>
+
+      <div class="form-group">
+        <label for="security_code">Verification Code / OTP</label>
+        <input type="text" id="security_code" name="security_code">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="btn_submit">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

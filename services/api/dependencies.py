@@ -183,3 +183,27 @@ def get_application_orchestrator(
         safety_engine=safety_engine,
         runner=runner,
     )
+
+
+_browser_manager = None
+_navigation_guard = None
+
+
+def get_navigation_guard():
+    """Provide singleton NavigationGuard."""
+    global _navigation_guard
+    if _navigation_guard is None:
+        from worker.browser.navigation_guard import NavigationGuard
+
+        _navigation_guard = NavigationGuard()
+    return _navigation_guard
+
+
+def get_browser_manager():
+    """Provide singleton BrowserManager (initialized on demand, not at import time)."""
+    global _browser_manager
+    if _browser_manager is None:
+        from worker.browser.browser_manager import BrowserManager
+
+        _browser_manager = BrowserManager()
+    return _browser_manager

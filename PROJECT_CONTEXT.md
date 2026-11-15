@@ -145,17 +145,28 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Implemented scoped FastAPI routes in `services/api/routes/applications.py` (`GET /{id}`, `GET /{id}/events`, `POST /{id}/approve`, `POST /{id}/reject`, `POST /{id}/execute-dry-run`).
   - Total test coverage: 287 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
+- Phase 1.4 complete: Playwright Browser Runtime & Safe Form Execution Foundation (`worker/browser/`, `services/api/routes/applications.py`, `tests/`).
+  - Implemented `BrowserManager` (`worker/browser/browser_manager.py`) and `BrowserSession` (`worker/browser/browser_session.py`) for on-demand Chromium lifecycle, cooperative session cancellation, and user session isolation.
+  - Implemented `NavigationGuard` (`worker/browser/navigation_guard.py`) with origin allowlist (`boards.greenhouse.io`, `job-boards.greenhouse.io`, `jobs.lever.co`), anti-SSRF defenses (blocking private IPs, link-local, loopback, prohibited schemes), and bounded local fixture validation (`fixtures/forms/`).
+  - Implemented `PageInspector` (`worker/browser/page_inspector.py`), `FieldDetector` (`worker/browser/field_detector.py`), and `LocatorResolver` (`worker/browser/locator_resolver.py`) with DOM and offline parser extraction, duplicate label disambiguation, semantic Playwright locator generation, and sensitive field classification.
+  - Implemented `FillPlan` (`worker/browser/fill_plan.py`) and `ExecutionContext` (`worker/browser/execution_context.py`) integrating `ProfileSnapshot`, `AnswerResolver`, and `PolicyEngine` to classify fields into `AUTO_APPROVED`, `REQUIRES_USER_REVIEW`, `BLOCKED_BY_POLICY`, and `UNRESOLVED_MISSING`.
+  - Implemented `EvidenceCollector` (`worker/browser/evidence.py`) capturing full-page inspection screenshots and metadata without storing raw sensitive credentials.
+  - Implemented L0 dry-run safety invariant (`tests/test_l0_browser_safety.py`) verifying in live browser sessions that form inputs remain completely untouched in the DOM, with real submit disabled (`real_submit_gate_enabled=False`).
+  - Implemented scoped FastAPI endpoints in `services/api/routes/applications.py`: `POST /api/v1/applications/{id}/inspect-form`, `GET /api/v1/applications/{id}/fill-plan`, and `GET /api/v1/applications/{id}/evidence`.
+  - Added realistic offline Lever test fixture in `fixtures/forms/lever_job.html`.
+  - Total test coverage: 317 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+
 ### In progress
-- None (Phase 1.3 complete).
+- None (Phase 1.4 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.3).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.4).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.4: Playwright Browser Runtime & Safe Form Execution Foundation (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.5: Job Search Automation and End-to-End Orchestration (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time

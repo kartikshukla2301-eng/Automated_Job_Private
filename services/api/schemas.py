@@ -115,3 +115,69 @@ class ApplicationRejectionRequest(BaseModel):
     model_config = {"extra": "forbid"}
     user_id: UUID = Field(..., description="Owner user UUID rejecting the application")
     reason: str = Field(default="Rejected by user", max_length=200, description="Rejection rationale")
+
+
+class PlannedFieldResponse(BaseModel):
+    """Schema for individual planned field in a FillPlan."""
+
+    field_id: str
+    label: str
+    input_type: str
+    required: bool
+    proposed_answer_ref: Optional[str] = None
+    resolution_outcome: str
+    policy_type: str
+    field_category: str
+    confidence: float
+    explanation: str
+    required_user_action: Optional[str] = None
+    is_safe_to_prefill: bool
+
+
+class FillPlanResponse(BaseModel):
+    """Schema for complete Form FillPlan."""
+
+    plan_id: UUID
+    session_id: UUID
+    job_id: Optional[UUID] = None
+    canonical_url: str
+    page_title: str
+    total_fields: int
+    auto_approved_count: int
+    needs_review_count: int
+    blocked_count: int
+    unresolved_count: int
+    is_executable: bool
+    fields: List[PlannedFieldResponse] = Field(default_factory=list)
+    created_at: str
+
+
+class InspectionEvidenceResponse(BaseModel):
+    """Schema for form inspection evidence metadata."""
+
+    evidence_id: UUID
+    session_id: UUID
+    job_id: Optional[UUID] = None
+    provider: str
+    canonical_url: str
+    page_title: str
+    inspection_timestamp: str
+    detected_field_count: int
+    resolved_field_count: int
+    unresolved_field_count: int
+    blocked_field_count: int
+    outcome: str
+    screenshot_path: Optional[str] = None
+    fill_plan_id: Optional[UUID] = None
+    errors: List[str] = Field(default_factory=list)
+
+
+class FormInspectionRequest(BaseModel):
+    """Request schema for inspecting an application form and generating a FillPlan."""
+
+    model_config = {"extra": "forbid"}
+
+    user_id: UUID = Field(..., description="Owner user UUID initiating inspection")
+    job_url_or_path: Optional[str] = Field(default=None, description="Target job fixture or URL to inspect")
+    company: str = Field(default="Example Company", max_length=100)
+    provider_name: str = Field(default="greenhouse", max_length=50)

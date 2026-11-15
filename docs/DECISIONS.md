@@ -51,3 +51,14 @@ Status: Accepted / Locked for Phase 0.9.
   3. If both provider cost and valid token usage are missing, the cost is recorded as `unknown`. To prevent silent budget circumvention, recorded unknown-cost calls block subsequent paid provider requests for that day until the daily accounting boundary or explicit administrative reconciliation.
   4. Unknown costs are never treated as zero.
   5. Any relaxation of this policy requires written proposal and explicit owner approval.
+
+## AD-010 — L0 Browser Runtime Dry-Run Non-Mutation Safety Invariant
+Status: Accepted / Locked for Phase 1.4.
+- Context: During L0 dry-run form inspection and fill planning, Playwright browser sessions navigate to job application pages and extract form metadata. The locked architecture requires that L0 dry-run must never enter candidate data into external forms, trigger autosave, submit applications, or perform irreversible actions.
+- Decision:
+  1. The browser runtime in L0 inspects the DOM and offline fixtures using read-only JavaScript DOM queries and static HTML parsing.
+  2. Input values, textarea contents, radio button selections, and select options are never modified or populated in the live DOM during L0 inspection.
+  3. Form field values are resolved in-memory into an explainable `FillPlan` against the candidate profile and Answer Bank without interacting with form input controls.
+  4. Form submission (`form.submit()`, clicking submit/apply buttons, uploading candidate resume/cover letter files) is strictly forbidden.
+  5. The central safety gate `real_submit_gate_enabled` remains hardcoded to `False`.
+  6. Navigation is strictly bound to approved job board domains (`boards.greenhouse.io`, `job-boards.greenhouse.io`, `jobs.lever.co`) or bounded local fixtures (`fixtures/forms/`). All SSRF, private IPv4, loopback, and disallowed schemes are blocked before browser launch.

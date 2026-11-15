@@ -10,6 +10,9 @@ from services.api.dependencies import (
     get_application_event_repository,
     get_application_orchestrator,
     get_application_repository,
+    get_browser_manager,
+    get_navigation_guard,
+    get_profile_source,
     verify_worker_token,
 )
 from services.api.schemas import (
@@ -17,7 +20,11 @@ from services.api.schemas import (
     ApplicationEventResponse,
     ApplicationRejectionRequest,
     ApplicationResponse,
+    FillPlanResponse,
+    FormInspectionRequest,
     GreenhouseDryRunRequest,
+    InspectionEvidenceResponse,
+    PlannedFieldResponse,
     SafetyErrorResponse,
 )
 from worker.application.exceptions import (
@@ -32,6 +39,17 @@ from worker.application.orchestrator import ApplicationOrchestrator
 from worker.application.repository import (
     ApplicationEventRepository,
     ApplicationRepository,
+)
+from worker.profile.source import ProfileSource
+from worker.browser import (
+    BrowserManager,
+    ExecutionContext,
+    FillPlan,
+    InspectionEvidence,
+    NavigationGuard,
+    PrivateNetworkTargetError,
+    SessionTimeoutError,
+    UnsupportedDestinationError,
 )
 from worker.core.exceptions import (
     CapExceededError,
@@ -195,3 +213,168 @@ async def execute_dry_run_for_application(
         raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=str(err))
     except CapExceededError as err:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(err))
+
+
+_fill_plans: dict[UUID, FillPlan] = {}
+_evidence_records: dict[UUID, InspectionEvidence] = {}
+
+
+def _serialize_fill_plan(plan: FillPlan) -> FillPlanResponse:
+    return FillPlanResponse(
+        plan_id=plan.plan_id,
+        session_id=plan.session_id,
+        job_id=plan.job_id,
+        canonical_url=plan.canonical_url,
+        page_title=plan.page_title,
+        total_fields=plan.total_fields,
+        auto_approved_count=plan.auto_approved_count,
+        needs_review_count=plan.needs_review_count,
+        blocked_count=plan.blocked_count,
+        unresolved_count=plan.unresolved_count,
+        is_executable=plan.is_executable(),
+        created_at=plan.created_at.isoformat(),
+        fields=[
+            PlannedFieldResponse(
+                field_id=f.field_id,
+                label=f.detected_field.label,
+                input_type=f.detected_field.input_type,
+                required=f.detected_field.required,
+                proposed_answer_ref=f.proposed_answer_ref,
+                resolution_outcome=f.resolution_outcome.value,
+                policy_type=f.policy_type.value,
+                field_category=f.field_category.value,
+                confidence=f.confidence,
+                explanation=f.explanation,
+                required_user_action=f.required_user_action,
+                is_safe_to_prefill=f.is_safe_to_prefill,
+            )
+            for f in plan.fields
+        ],
+    )
+
+
+def _serialize_evidence(ev: InspectionEvidence) -> InspectionEvidenceResponse:
+    return InspectionEvidenceResponse(
+        evidence_id=ev.evidence_id,
+        session_id=ev.session_id,
+        job_id=ev.job_id,
+        provider=ev.provider,
+        canonical_url=ev.canonical_url,
+        page_title=ev.page_title,
+        inspection_timestamp=ev.inspection_timestamp.isoformat(),
+        detected_field_count=ev.detected_field_count,
+        resolved_field_count=ev.resolved_field_count,
+        unresolved_field_count=ev.unresolved_field_count,
+        blocked_field_count=ev.blocked_field_count,
+        outcome=ev.outcome,
+        screenshot_path=ev.screenshot_path,
+        fill_plan_id=ev.fill_plan_id,
+        errors=ev.errors,
+    )
+
+
+@router.post(
+    "/{application_id}/inspect-form",
+    response_model=FillPlanResponse,
+    summary="Inspect Application Form (L0)",
+    description="Inspects an application form safely and produces an explainable FillPlan without entering data.",
+)
+async def inspect_application_form(
+    application_id: UUID,
+    request: FormInspectionRequest,
+    repo: ApplicationRepository = Depends(get_application_repository),
+    browser_manager: BrowserManager = Depends(get_browser_manager),
+    navigation_guard: NavigationGuard = Depends(get_navigation_guard),
+    profile_source: ProfileSource = Depends(get_profile_source),
+) -> FillPlanResponse:
+    app = await repo.get_by_id(application_id)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application '{application_id}' not found.",
+        )
+    if app.user_id != request.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Application does not belong to specified user.",
+        )
+
+    target_url = request.job_url_or_path or "fixtures/forms/greenhouse_job.html"
+    profile = await profile_source.get_snapshot()
+    session = await browser_manager.create_session(user_id=request.user_id)
+
+    try:
+        ctx = ExecutionContext(
+            session=session,
+            navigation_guard=navigation_guard,
+            profile=profile,
+        )
+        plan, evidence = await ctx.inspect_and_plan(
+            target_url=target_url,
+            provider_name=request.provider_name,
+            job_id=app.job_id,
+        )
+        _fill_plans[application_id] = plan
+        _evidence_records[application_id] = evidence
+        return _serialize_fill_plan(plan)
+    except (UnsupportedDestinationError, PrivateNetworkTargetError) as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
+    except SessionTimeoutError as err:
+        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(err))
+    except Exception as err:
+        logger.exception("Form inspection failed for application %s: %s", application_id, err)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Inspection failed: {err}")
+    finally:
+        await session.close()
+
+
+@router.get(
+    "/{application_id}/fill-plan",
+    response_model=FillPlanResponse,
+    summary="Get Application Fill Plan",
+    description="Retrieve the latest inspectable FillPlan for an application.",
+)
+async def get_application_fill_plan(
+    application_id: UUID,
+    repo: ApplicationRepository = Depends(get_application_repository),
+) -> FillPlanResponse:
+    app = await repo.get_by_id(application_id)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application '{application_id}' not found.",
+        )
+
+    plan = _fill_plans.get(application_id)
+    if not plan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No FillPlan found for application '{application_id}'. Run inspection first.",
+        )
+    return _serialize_fill_plan(plan)
+
+
+@router.get(
+    "/{application_id}/evidence",
+    response_model=InspectionEvidenceResponse,
+    summary="Get Application Inspection Evidence",
+    description="Retrieve evidence metadata and screenshot reference for an application inspection.",
+)
+async def get_application_evidence(
+    application_id: UUID,
+    repo: ApplicationRepository = Depends(get_application_repository),
+) -> InspectionEvidenceResponse:
+    app = await repo.get_by_id(application_id)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application '{application_id}' not found.",
+        )
+
+    ev = _evidence_records.get(application_id)
+    if not ev:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No inspection evidence found for application '{application_id}'.",
+        )
+    return _serialize_evidence(ev)
