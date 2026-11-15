@@ -5,6 +5,7 @@
  */
 
 import type {
+  AnswerBankItem,
   ApplicationItem,
   DashboardOverview,
   FunnelAnalytics,
@@ -12,6 +13,7 @@ import type {
   PaginatedApplications,
   PaginatedJobs,
   ProfileSyncResponse,
+  ResumeItem,
   TimelineEvent,
 } from "../types/api";
 
@@ -151,6 +153,21 @@ export class JobAgentAPIClient {
     return this.request<ProfileSyncResponse>("/api/v1/dashboard/profile/sync", {
       method: "POST",
     });
+  }
+
+  public async getResumes(): Promise<ResumeItem[]> {
+    return this.request<ResumeItem[]>("/api/v1/dashboard/resumes");
+  }
+
+  public async getAnswerBank(params?: {
+    category?: string;
+    search?: string;
+  }): Promise<AnswerBankItem[]> {
+    const query = new URLSearchParams();
+    if (params?.category) query.set("category", params.category);
+    if (params?.search) query.set("search", params.search);
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return this.request<AnswerBankItem[]>(`/api/v1/dashboard/answers${qs}`);
   }
 }
 

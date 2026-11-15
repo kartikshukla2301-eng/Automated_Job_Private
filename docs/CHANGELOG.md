@@ -1,5 +1,25 @@
 # Changelog
 
+## Phase 3.4 — Profile, Resume & Answer Bank UI
+- Added `ResumeItem` and `AnswerBankItem` strongly typed interfaces in `apps/web/src/types/api.ts`.
+- Extended `JobAgentAPIClient` with `getResumes()` and `getAnswerBank()` in `apps/web/src/lib/api-client.ts`.
+- Implemented comprehensive Candidate Profile view in `apps/web/src/app/profile/page.tsx`:
+  - Live DevLeveler sync trigger connecting to `POST /api/v1/dashboard/profile/sync` with instant profile version update and cache freshness indication.
+  - Verified contact information, portfolio links, and US citizenship / work authorization status.
+  - Technical skills categorized into 3 proficiency tiers (Expert, Advanced, Familiar).
+  - Production experience timeline with verified achievements and education details.
+- Implemented Resume Library & Tailoring workspace in `apps/web/src/app/resumes/page.tsx`:
+  - Immutable storage representation with cryptographic SHA-256 digest copying and validation.
+  - Role family classification (`platform`, `backend`, `fullstack`) with dedicated achievement highlight modal.
+  - Upload dialog with target role family categorization and anti-hallucination policy reinforcement.
+- Implemented Candidate Answer Bank in `apps/web/src/app/answer-bank/page.tsx`:
+  - Question and answer repository spanning 12 architecture-locked categories.
+  - Code-enforced PolicyEngine rules: `auto`, `auto+log`, `always_ask`, and `never_fill`.
+  - Prominent Section 13 Security Warning alerting operators that passwords, SSN, OTPs, and credit card numbers are strictly blocked from automation.
+  - Dynamic category and policy rule filtering, real-time search, and "Add Answer" registration modal.
+- Added comprehensive unit tests in `apps/web/src/app/profile/profile-resumes-answers.test.tsx` verifying DevLeveler sync, resume SHA-256 rendering, and Answer Bank policy rules.
+- Verified test suite: 18 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.3 — Application Workspace & Approval Queue
 - Extended `JobAgentAPIClient` with `approveApplication(id, notes)` and `rejectApplication(id, reason)` in `apps/web/src/lib/api-client.ts`.
 - Implemented full Application Workspace in `apps/web/src/app/applications/page.tsx`:

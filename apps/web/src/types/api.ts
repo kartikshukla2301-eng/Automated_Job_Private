@@ -79,6 +79,28 @@ export interface ProfileSyncResponse {
   synced_at: string;
 }
 
+export interface ResumeItem {
+  id: string;
+  filename: string;
+  role_family: "platform" | "backend" | "fullstack";
+  sha256_hash: string;
+  size_bytes: number;
+  created_at: string;
+  is_active: boolean;
+  highlights: string[];
+}
+
+export interface AnswerBankItem {
+  id: string;
+  category: string;
+  question_pattern: string;
+  answer_text: string;
+  policy: "auto" | "auto+log" | "always_ask" | "never_fill";
+  aliases: string[];
+  last_used_at?: string | null;
+  updated_at: string;
+}
+
 export interface MatchDimension {
   name: string;
   score: number;
