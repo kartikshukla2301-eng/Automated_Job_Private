@@ -15,3 +15,15 @@ class ProfileParseError(ProfileError):
 
 class ProfileValidationError(ProfileError):
     """Raised when profile content fails structural or typed model validation."""
+
+
+class DevLevelerAuthError(ProfileError):
+    """Raised when DevLeveler API authentication fails (401/403)."""
+
+
+class DevLevelerConnectionError(ProfileError):
+    """Raised when DevLeveler API network connection or server error occurs."""
+
+
+class HallucinationDetectedError(ProfileError):
+    """Raised when tailored resume or cover letter contains unverified assertions not grounded in candidate profile."""

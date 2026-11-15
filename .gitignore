@@ -46,4 +46,8 @@ ehthumbs.db
 *.log
 artifacts/
 screenshots/
+worker/profile/cache/
+worker/profile/resumes/*
+!worker/profile/resumes/.gitkeep
+worker/application/outcomes.json
 

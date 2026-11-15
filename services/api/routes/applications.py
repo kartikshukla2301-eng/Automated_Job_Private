@@ -378,3 +378,74 @@ async def get_application_evidence(
             detail=f"No inspection evidence found for application '{application_id}'.",
         )
     return _serialize_evidence(ev)
+
+
+from worker.application.outcomes import (
+    ApplicationOutcomeRecord,
+    OutcomeMilestone,
+    OutcomeTracker,
+)
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
+
+class RecordOutcomeRequest(BaseModel):
+    milestone: OutcomeMilestone
+    event_timestamp: Optional[datetime] = None
+    notes: Optional[str] = None
+    recruiter_contact: Optional[str] = None
+    offer_amount: Optional[float] = None
+
+
+_outcome_tracker = OutcomeTracker()
+
+
+@router.post(
+    "/{application_id}/outcomes",
+    response_model=ApplicationOutcomeRecord,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record Application Outcome Milestone",
+    description="Record an interview, offer, or post-application decision milestone.",
+)
+async def record_application_outcome(
+    application_id: UUID,
+    request: RecordOutcomeRequest,
+    repo: ApplicationRepository = Depends(get_application_repository),
+) -> ApplicationOutcomeRecord:
+    app = await repo.get_by_id(application_id)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application '{application_id}' not found.",
+        )
+
+    record = _outcome_tracker.record_milestone(
+        application_id=str(application_id),
+        milestone=request.milestone,
+        event_timestamp=request.event_timestamp,
+        notes=request.notes,
+        recruiter_contact=request.recruiter_contact,
+        offer_amount=request.offer_amount,
+    )
+    return record
+
+
+@router.get(
+    "/{application_id}/outcomes",
+    response_model=List[ApplicationOutcomeRecord],
+    summary="List Application Outcome Milestones",
+    description="Retrieve all interview, offer, and decision milestones recorded for an application.",
+)
+async def get_application_outcomes(
+    application_id: UUID,
+    repo: ApplicationRepository = Depends(get_application_repository),
+) -> List[ApplicationOutcomeRecord]:
+    app = await repo.get_by_id(application_id)
+    if not app:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Application '{application_id}' not found.",
+        )
+
+    return _outcome_tracker.get_outcomes_for_application(str(application_id))

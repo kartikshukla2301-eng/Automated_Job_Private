@@ -195,19 +195,26 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Enforced restricted provider autonomy in `AutonomyController` strictly capping LinkedIn at L1 autonomy and blocking promotion to L2 or L3.
   - Authored authoritative `docs/PROVIDER_STATUS.md` documenting rollout status across all 6 providers.
   - Total test coverage: 385 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.9 complete: DevLeveler Profile Integration & Resume Intelligence.
+  - Implemented `DevLevelerProfileSource` with ETag caching, local snapshot caching, 24-hour staleness detection, and fallback to `LocalFileProfileSource`.
+  - Implemented `ResumeManager` managing versioned resume files, calculating SHA-256 content hashes, rejecting duplicate file uploads, and matching role families (platform, backend, fullstack).
+  - Implemented `ResumeIntelligenceEngine` prioritizing and ordering verified experience highlights with audit diffs (`BulletDiff`) and enforcing zero-tolerance anti-hallucination validation (`HallucinationDetectedError`).
+  - Implemented `CoverLetterGenerator` constructing personalized drafts with prompt injection sanitization, provenance hashes, and mandatory `needs_review=True` human verification.
+  - Implemented `OutcomeTracker` and scoped FastAPI endpoints (`POST /api/v1/applications/{id}/outcomes`, `GET /api/v1/applications/{id}/outcomes`) for tracking interview and offer milestones.
+  - Total test coverage: 395 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 1.8 complete; proceeding to Phase 1.9).
+- None (Phase 1.9 complete; proceeding to Phase 2.0).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.8).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.9).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
 - Live Greenhouse, Lever, Naukri, Wellfound, Ashby, and LinkedIn external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.9: DevLeveler Profile Integration & Resume Intelligence.
+1. Phase 2.0: Production Readiness & Release Candidate.
 
 ## End-of-session handoff template
 - Task and date/time

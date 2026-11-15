@@ -184,3 +184,10 @@
   - Enforced restricted provider autonomy in `AutonomyController` strictly capping LinkedIn at L1 autonomy and blocking promotion to L2 or L3.
   - Authored authoritative `docs/PROVIDER_STATUS.md` documenting rollout status, risk tiers, authentication models, and autonomy limits across all 6 providers.
   - Expanded automated backend test suite from 377 to 385 passing tests (+8 comprehensive Phase 1.8 tests in `tests/test_linkedin_provider.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 1.9: Implemented DevLeveler Profile Integration & Resume Intelligence (`worker/profile/devleveler.py`, `worker/profile/resume_manager.py`, `worker/profile/resume_intelligence.py`, `worker/profile/cover_letter.py`, `worker/application/outcomes.py`, `tests/`) per locked architecture Section 6, Section 8, Section 13, and Section 14.
+  - Implemented `DevLevelerProfileSource` integrating with `GET /api/v1/me/job-agent-profile`, supporting bearer token authentication, ETag caching, 24-hour staleness detection, and fallback to `LocalFileProfileSource`.
+  - Implemented `ResumeManager` managing versioned resume files, calculating SHA-256 content hashes, rejecting duplicate file uploads, and matching role families (platform, backend, fullstack).
+  - Implemented `ResumeIntelligenceEngine` prioritizing and ordering verified experience highlights with full audit diffs (`BulletDiff`) and enforcing zero-tolerance anti-hallucination validation (`HallucinationDetectedError`).
+  - Implemented `CoverLetterGenerator` constructing personalized drafts with prompt injection sanitization, provenance hashes, and mandatory `needs_review=True` human verification.
+  - Implemented `OutcomeTracker` and scoped FastAPI endpoints (`POST /api/v1/applications/{id}/outcomes`, `GET /api/v1/applications/{id}/outcomes`) for tracking interview and offer milestones.
+  - Expanded automated backend test suite from 385 to 395 passing tests (+10 comprehensive Phase 1.9 tests across `tests/test_devleveler_profile.py`, `tests/test_resume_intelligence.py`, and `tests/test_outcomes.py`). All 2 frontend unit tests and ESLint checks passing.
