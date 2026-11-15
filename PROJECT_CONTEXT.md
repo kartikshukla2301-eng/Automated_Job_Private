@@ -136,17 +136,26 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Implemented deduplication safety classifier in `worker/matching/deduplication.py`: distinguishes Key 1 exact provider matches, Key 2 + 3 cross-platform identical matches, possible duplicates (same canonical key but distinct requisition descriptions preserved without losing openings), and distinct openings.
   - Total test coverage: 256 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
+- Phase 1.3 complete: Application Lifecycle State Machine and Orchestration (`worker/application/`, `services/api/routes/applications.py`).
+  - Implemented canonical `Application` and `ApplicationEvent` models in `worker/application/models.py` with all 18 statuses matching `ck_applications_status`, `AutonomyLevel` (`L0`-`L3`), and `ApprovalStatus`.
+  - Implemented Section 13 central state machine in `worker/application/state_machine.py` with strict transition validation, typed exceptions, clock injection, and automatic audit event generation.
+  - Implemented deterministic SHA-256 idempotency key generation in `worker/application/idempotency.py` bounded to 128 characters.
+  - Implemented `ApplicationRepository` and `ApplicationEventRepository` protocols and thread-safe `InMemoryApplicationRepository` and `InMemoryApplicationEventRepository` in `worker/application/repository.py` enforcing `UNIQUE(user_id, job_id)` and `UNIQUE(idempotency_key)`.
+  - Implemented central `ApplicationOrchestrator` in `worker/application/orchestrator.py` integrating discovery, matching, safety pre-apply barrier, human-in-the-loop approval gates, fail-closed crash recovery, and L0 dry-run execution without external submissions.
+  - Implemented scoped FastAPI routes in `services/api/routes/applications.py` (`GET /{id}`, `GET /{id}/events`, `POST /{id}/approve`, `POST /{id}/reject`, `POST /{id}/execute-dry-run`).
+  - Total test coverage: 287 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+
 ### In progress
-- None (Phase 1.2 complete).
+- None (Phase 1.3 complete).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.2).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.3).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.3 / Application Lifecycle State Machine or next planned milestone (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.4: Playwright Browser Runtime & Safe Form Execution Foundation (Awaiting user review and instruction; do not proceed automatically).
 
 ## End-of-session handoff template
 - Task and date/time

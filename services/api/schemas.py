@@ -1,5 +1,8 @@
 """Pydantic schemas for FastAPI endpoints."""
 
+from typing import Any, Dict, List, Optional
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -60,3 +63,55 @@ class SafetyErrorResponse(BaseModel):
     error: str = Field(..., description="Error classification category")
     detail: str = Field(..., description="Human-readable explanation of why safety check failed")
     blocked_by: str = Field(..., description="Identifier of blocking mechanism (kill_switch, caps, etc.)")
+
+
+class ApplicationResponse(BaseModel):
+    """Application record response."""
+
+    id: UUID
+    user_id: UUID
+    job_id: UUID
+    platform: str
+    external_id: str
+    profile_version: str
+    autonomy_level: str
+    status: str
+    score: Optional[float] = None
+    score_breakdown: Dict[str, Any] = Field(default_factory=dict)
+    approval_status: Optional[str] = None
+    approved_at: Optional[str] = None
+    idempotency_key: str
+    evidence_ref: Optional[str] = None
+    error: Optional[str] = None
+    applied_at: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class ApplicationEventResponse(BaseModel):
+    """Audit event history record response."""
+
+    id: UUID
+    application_id: UUID
+    event_type: str
+    previous_status: Optional[str] = None
+    new_status: Optional[str] = None
+    reason: Optional[str] = None
+    triggering_component: Optional[str] = None
+    timestamp: str
+    payload: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ApplicationApprovalRequest(BaseModel):
+    """Request payload for user application approval."""
+
+    model_config = {"extra": "forbid"}
+    user_id: UUID = Field(..., description="Owner user UUID approving the application")
+
+
+class ApplicationRejectionRequest(BaseModel):
+    """Request payload for user application rejection."""
+
+    model_config = {"extra": "forbid"}
+    user_id: UUID = Field(..., description="Owner user UUID rejecting the application")
+    reason: str = Field(default="Rejected by user", max_length=200, description="Rejection rationale")

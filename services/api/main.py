@@ -5,8 +5,14 @@ from fastapi.responses import JSONResponse
 
 from services.api.config import Settings, get_settings, settings
 from services.api.logging_config import RequestCorrelationMiddleware, setup_logging
+from services.api.routes.applications import router as applications_router
 from services.api.routes.dry_run import router as dry_run_router
 from services.api.schemas import HealthResponse
+from worker.application.exceptions import (
+    ApprovalRequiredError,
+    InvalidStateTransitionError,
+    TerminalStateError,
+)
 from worker.core.exceptions import (
     CapExceededError,
     InvalidSafetyStateError,
@@ -71,6 +77,7 @@ def create_app(app_settings: Settings = settings) -> FastAPI:
 
     # Attach routers
     app.include_router(dry_run_router)
+    app.include_router(applications_router)
 
     @app.get(
         "/health",

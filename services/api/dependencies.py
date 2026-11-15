@@ -129,3 +129,57 @@ def get_llm_gateway(app_settings: Settings = Depends(get_settings)):
     from worker.core.llm_gateway import get_managed_llm_gateway
 
     return get_managed_llm_gateway()
+
+
+_application_repo = None
+_event_repo = None
+
+
+def get_application_repository():
+    """Provide singleton in-memory ApplicationRepository."""
+    global _application_repo
+    if _application_repo is None:
+        from worker.application.repository import InMemoryApplicationRepository
+
+        _application_repo = InMemoryApplicationRepository()
+    return _application_repo
+
+
+def get_application_event_repository():
+    """Provide singleton in-memory ApplicationEventRepository."""
+    global _event_repo
+    if _event_repo is None:
+        from worker.application.repository import InMemoryApplicationEventRepository
+
+        _event_repo = InMemoryApplicationEventRepository()
+    return _event_repo
+
+
+def get_matching_service():
+    """Provide JobMatchingService configured with deterministic fallback embeddings."""
+    from worker.matching.embedding import DeterministicFallbackEmbeddingProvider
+    from worker.matching.service import JobMatchingService
+
+    return JobMatchingService(
+        embedding_provider=DeterministicFallbackEmbeddingProvider(),
+        threshold=65.0,
+    )
+
+
+def get_application_orchestrator(
+    application_repo=Depends(get_application_repository),
+    event_repo=Depends(get_application_event_repository),
+    matching_service=Depends(get_matching_service),
+    safety_engine: SafetyEngine = Depends(get_safety_engine),
+    runner: JobApplicationRunner = Depends(get_runner),
+):
+    """Provide configured central ApplicationOrchestrator."""
+    from worker.application.orchestrator import ApplicationOrchestrator
+
+    return ApplicationOrchestrator(
+        application_repo=application_repo,
+        event_repo=event_repo,
+        matching_service=matching_service,
+        safety_engine=safety_engine,
+        runner=runner,
+    )
