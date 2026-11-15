@@ -11,6 +11,7 @@ import type {
   DashboardOverview,
   FunnelAnalytics,
   JobDetailItem,
+  KillSwitchStatus,
   PaginatedApplications,
   PaginatedJobs,
   ProfileSyncResponse,
@@ -195,6 +196,19 @@ export class JobAgentAPIClient {
 
   public async clearSession(platform: string): Promise<{ status: string }> {
     return this.request<{ status: string }>(`/api/v1/ops/sessions/${platform}/clear`, {
+      method: "POST",
+    });
+  }
+
+  public async tripKillSwitch(reason?: string): Promise<KillSwitchStatus> {
+    return this.request<KillSwitchStatus>("/api/v1/dashboard/kill-switch/trip", {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "Manual operator emergency stop" }),
+    });
+  }
+
+  public async resetKillSwitch(): Promise<KillSwitchStatus> {
+    return this.request<KillSwitchStatus>("/api/v1/dashboard/kill-switch/reset", {
       method: "POST",
     });
   }

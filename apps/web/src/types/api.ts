@@ -134,6 +134,13 @@ export interface CanaryRunResult {
   timestamp: string;
 }
 
+export interface KillSwitchStatus {
+  kill_switch_active: boolean;
+  status: "ARMED" | "TRIPPED";
+  reason?: string | null;
+  updated_at?: string;
+}
+
 export interface MatchDimension {
   name: string;
   score: number;

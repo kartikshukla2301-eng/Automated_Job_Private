@@ -230,3 +230,23 @@ async def trigger_profile_sync(
         "candidate_name": snapshot.candidate.name,
         "synced_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@router.post("/kill-switch/trip")
+async def trip_kill_switch_endpoint(
+    subject: AuthenticatedSubject = Depends(require_owner_or_operator),
+    kill_switch: KillSwitch = Depends(get_kill_switch),
+) -> Dict[str, Any]:
+    """Trip kill switch to immediately halt all automation."""
+    kill_switch.trip(reason="Tripped via UI Dashboard", updated_by="operator")
+    return {"kill_switch_active": True, "status": "TRIPPED"}
+
+
+@router.post("/kill-switch/reset")
+async def reset_kill_switch_endpoint(
+    subject: AuthenticatedSubject = Depends(require_owner_or_operator),
+    kill_switch: KillSwitch = Depends(get_kill_switch),
+) -> Dict[str, Any]:
+    """Reset kill switch to resume operational capability."""
+    kill_switch.reset(updated_by="operator")
+    return {"kill_switch_active": False, "status": "ARMED"}

@@ -1,5 +1,23 @@
 # Changelog
 
+## Phase 3.6 — Automation & Safety Control Center
+- Added `trip_kill_switch_endpoint` (`POST /api/v1/dashboard/kill-switch/trip`) and `reset_kill_switch_endpoint` (`POST /api/v1/dashboard/kill-switch/reset`) in `services/api/routes/dashboard.py`.
+- Added `KillSwitchStatus` interface in `apps/web/src/types/api.ts` and extended `JobAgentAPIClient` with `tripKillSwitch(reason)` and `resetKillSwitch()` in `apps/web/src/lib/api-client.ts`.
+- Implemented Automation & Safety Control Center in `apps/web/src/app/automation/page.tsx`:
+  - Fail-closed Global Kill Switch with instant visual feedback (Armed vs. Tripped), reason logging, and confirmation dialogs for both trip and reset actions.
+  - Prominent Real-Submit Gate locked banner (`real_submit_gate_enabled = False`) with `RealSubmitGateBlockedError` code guard notice.
+  - Stage S0 daily capacity rate caps display (2 applications/day active limit, 1 application/hour rate limit, 40 applications/month ceiling, 90-day company cooldown).
+  - APScheduler operational window display (09:00–23:00 IST), human jitter randomization (120s–300s), and 15-minute dead-man heartbeat alerts.
+  - Staged autonomy hierarchy overview (L0 Supervised Inspection through L3 Unsupervised with LinkedIn capped at L1).
+- Implemented Settings & Platform Configuration workspace in `apps/web/src/app/settings/page.tsx`:
+  - Backend API connection validator with configurable FastAPI Base URL and latency indicator.
+  - Supabase PostgreSQL target status and verified migrations indicator (`001_initial_schema.sql`).
+  - Telegram Bot notification configuration with masked bot token and chat ID allowlist.
+  - LLM Gateway budget controller enforcing locked hard limit (\$0.50/day max) and deterministic-first model routing.
+  - Authoritative Security Invariants panel highlighting permanent submit lock, S0 cap, and zero plaintext password storage.
+- Added comprehensive unit tests in `apps/web/src/app/automation/automation-settings.test.tsx` testing kill switch controls, trip/reset flows, locked barriers, and settings management.
+- Verified test suite: 25 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.5 — Provider & Browser Session Management UI
 - Added `ProviderStatusItem`, `SessionStatusItem`, and `CanaryRunResult` strongly typed contracts in `apps/web/src/types/api.ts`.
 - Extended `JobAgentAPIClient` with `getProviderStatus()`, `runCanary(provider)`, `getSessions()`, `verifySession(platform)`, and `clearSession(platform)` in `apps/web/src/lib/api-client.ts`.
