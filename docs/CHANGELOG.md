@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 2.7 — L1 Supervised Execution Preparation
+- Implemented `SupervisedExecutionSimulator` and `PreSubmissionSimulationReport` in `worker/application/supervised.py`.
+- Enforced pre-submission verification of kill switch, rate caps, provider health, answer freshness, and sensitive field policies, strictly halting execution before any submit action.
+- Strictly enforced hard barrier raising `RealSubmitGateBlockedError` upon any live submission attempt (`real_submit_gate_enabled = False`).
+- Validated `AutonomyController` staged autonomy rules: promotion to L1 requires 30 applications, >=98% accuracy, 0 wrong sensitive answers, 0 duplicates, explicit human approval, and capped LinkedIn at L1.
+- Added unit tests in `tests/test_l1_supervision.py`; 435 backend tests passed, 2 frontend tests passed, ESLint clean.
+
 ## Phase 2.6 — Operations, Notifications, Observability & Recovery
 - Enhanced `TelegramNotificationService` with bounded retries and exponential backoff (`_send_with_retries`).
 - Implemented `AlertDeduplicator` suppressing identical repeating alerts within configurable cooldown windows.
