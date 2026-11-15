@@ -101,6 +101,39 @@ export interface AnswerBankItem {
   updated_at: string;
 }
 
+export interface ProviderStatusItem {
+  name: string;
+  display_name: string;
+  status: "HEALTHY" | "DEGRADED" | "PAUSED" | "RESTRICTED";
+  risk_tier: "LOW" | "MEDIUM" | "HIGH";
+  autonomy_cap: "L0" | "L1" | "L2" | "L3";
+  consecutive_failures: number;
+  successful_inspections: number;
+  last_canary_status?: string | null;
+  last_canary_at?: string | null;
+  notes?: string;
+}
+
+export interface SessionStatusItem {
+  platform: string;
+  session_file: string;
+  status: "ACTIVE_VALID" | "EXPIRED" | "UNAUTHENTICATED" | "WALL_DETECTED";
+  last_verified_at: string;
+  expiry_ttl_days: number;
+  days_remaining: number;
+  notes?: string;
+}
+
+export interface CanaryRunResult {
+  provider: string;
+  success: boolean;
+  status: string;
+  fields_detected: number;
+  duration_ms: number;
+  error?: string | null;
+  timestamp: string;
+}
+
 export interface MatchDimension {
   name: string;
   score: number;

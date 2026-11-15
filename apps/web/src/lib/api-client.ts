@@ -7,13 +7,16 @@
 import type {
   AnswerBankItem,
   ApplicationItem,
+  CanaryRunResult,
   DashboardOverview,
   FunnelAnalytics,
   JobDetailItem,
   PaginatedApplications,
   PaginatedJobs,
   ProfileSyncResponse,
+  ProviderStatusItem,
   ResumeItem,
+  SessionStatusItem,
   TimelineEvent,
 } from "../types/api";
 
@@ -168,6 +171,32 @@ export class JobAgentAPIClient {
     if (params?.search) query.set("search", params.search);
     const qs = query.toString() ? `?${query.toString()}` : "";
     return this.request<AnswerBankItem[]>(`/api/v1/dashboard/answers${qs}`);
+  }
+
+  public async getProviderStatus(): Promise<ProviderStatusItem[]> {
+    return this.request<ProviderStatusItem[]>("/api/v1/ops/providers");
+  }
+
+  public async runCanary(provider: string): Promise<CanaryRunResult> {
+    return this.request<CanaryRunResult>(`/api/v1/ops/canaries/${provider}/run`, {
+      method: "POST",
+    });
+  }
+
+  public async getSessions(): Promise<SessionStatusItem[]> {
+    return this.request<SessionStatusItem[]>("/api/v1/ops/sessions");
+  }
+
+  public async verifySession(platform: string): Promise<{ status: string }> {
+    return this.request<{ status: string }>(`/api/v1/ops/sessions/${platform}/verify`, {
+      method: "POST",
+    });
+  }
+
+  public async clearSession(platform: string): Promise<{ status: string }> {
+    return this.request<{ status: string }>(`/api/v1/ops/sessions/${platform}/clear`, {
+      method: "POST",
+    });
   }
 }
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## Phase 3.5 — Provider & Browser Session Management UI
+- Added `ProviderStatusItem`, `SessionStatusItem`, and `CanaryRunResult` strongly typed contracts in `apps/web/src/types/api.ts`.
+- Extended `JobAgentAPIClient` with `getProviderStatus()`, `runCanary(provider)`, `getSessions()`, `verifySession(platform)`, and `clearSession(platform)` in `apps/web/src/lib/api-client.ts`.
+- Implemented comprehensive Provider Adapters & Status workspace in `apps/web/src/app/providers/page.tsx`:
+  - 6 monitored provider platforms (Greenhouse, Lever, Ashby, Naukri, Wellfound, LinkedIn).
+  - Explicit risk tiers (Low, Medium, High) and Autonomy Caps with LinkedIn permanently capped at L1 Autonomy.
+  - Automated circuit breaker telemetry tracking consecutive failures (auto-pause trigger at 3 failures).
+  - Interactive "Run Canary" action connecting to `/api/v1/ops/canaries/{provider}/run` with live timing, fields count, and DOM drift detection.
+  - Provider pause and resume toggles.
+- Implemented Browser Sessions & Authentication workspace in `apps/web/src/app/sessions/page.tsx`:
+  - Isolated browser cookie persistence tracking for Naukri, Wellfound, and LinkedIn.
+  - Section 13 Zero Plaintext Credential Protocol guarantee: strictly prohibiting plaintext password or OTP storage.
+  - Session TTL tracking with days remaining and expiry warnings.
+  - Interactive cookie freshness verification trigger.
+  - Manual login window launcher dialog guiding operators through isolated manual authentication without credential interception.
+  - One-click session cookie purge action.
+- Added comprehensive unit tests in `apps/web/src/app/providers/providers-sessions.test.tsx` verifying provider cards, risk tiers, LinkedIn L1 cap, canary execution, and session freshness verification.
+- Verified test suite: 21 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.4 — Profile, Resume & Answer Bank UI
 - Added `ResumeItem` and `AnswerBankItem` strongly typed interfaces in `apps/web/src/types/api.ts`.
 - Extended `JobAgentAPIClient` with `getResumes()` and `getAnswerBank()` in `apps/web/src/lib/api-client.ts`.
