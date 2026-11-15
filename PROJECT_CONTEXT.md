@@ -176,19 +176,28 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Implemented `AutonomyController` managing staged autonomy progression (L0->L1->L2->L3) with strict promotion criteria (30 apps, >=98% accuracy, 0 sensitive errors, 0 duplicates) and automatic demotion on safety violation.
   - Implemented capacity stage evaluation (S0->S1) enforcing locked daily cap (2 applications/day).
   - Total test coverage: 364 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.7 complete: Wellfound & Ashby Provider Adapters and Central Provider Registry.
+  - Implemented `WellfoundSessionManager` managing persistent manual session cookies with password rejection.
+  - Implemented `WellfoundDiscoveryAdapter` normalizing startup listings, compensation bounds, and already-applied flags.
+  - Implemented `WellfoundProvider` supporting Playwright form inspection and L0 dry-run execution while rejecting real submits.
+  - Implemented `AshbyDiscoveryAdapter` parsing Ashby boards and URL-based company identification.
+  - Implemented `AshbyProvider` and `LeverProvider` supporting Playwright form inspection and L0 dry-run execution while rejecting real submits.
+  - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit Wellfound and Ashby domains.
+  - Implemented central `ProviderRegistry` (`worker/providers/registry.py`) providing unified management across Greenhouse, Lever, Naukri, Wellfound, and Ashby.
+  - Total test coverage: 377 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 1.6 complete; proceeding to Phase 1.7).
+- None (Phase 1.7 complete; proceeding to Phase 1.8).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.6).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.7).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
-- Live Greenhouse, Lever, and Naukri external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
+- Live Greenhouse, Lever, Naukri, Wellfound, and Ashby external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.7: Wellfound and Ashby Provider Adapters.
+1. Phase 1.8: Restricted LinkedIn Provider Foundation.
 
 ## End-of-session handoff template
 - Task and date/time

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Senior Platform Engineer at CloudScale - Ashby Application</title>
+</head>
+<body>
+  <div class="ashby-application-container">
+    <div class="job-header">
+      <h1 class="ashby-job-title">Senior Platform Engineer</h1>
+      <div class="ashby-company-info">CloudScale Systems • San Francisco, CA (Remote)</div>
+    </div>
+
+    <form id="ashby-apply-form" action="/api/apply" method="POST">
+      <div class="field-wrapper">
+        <label for="ashby_name_first">First Name <span class="required">*</span></label>
+        <input type="text" id="ashby_name_first" name="first_name" required autocomplete="given-name">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_name_last">Last Name <span class="required">*</span></label>
+        <input type="text" id="ashby_name_last" name="last_name" required autocomplete="family-name">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_email">Email <span class="required">*</span></label>
+        <input type="email" id="ashby_email" name="email" required autocomplete="email">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_phone">Phone Number <span class="required">*</span></label>
+        <input type="tel" id="ashby_phone" name="phone" required autocomplete="tel">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_linkedin">LinkedIn Profile URL</label>
+        <input type="url" id="ashby_linkedin" name="urls[LinkedIn]">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_github">GitHub Profile URL</label>
+        <input type="url" id="ashby_github" name="urls[GitHub]">
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_notice">Notice Period (Days) <span class="required">*</span></label>
+        <input type="text" id="ashby_notice" name="notice_period_days" required>
+      </div>
+
+      <div class="field-wrapper">
+        <label for="ashby_work_auth">Are you authorized to work in India / US?</label>
+        <select id="ashby_work_auth" name="work_authorization">
+          <option value="">Select an option</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <!-- File upload must be skipped by L0 / policy -->
+      <div class="field-wrapper">
+        <label for="ashby_resume">Resume / CV</label>
+        <input type="file" id="ashby_resume" name="resume">
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="ashby-submit-btn">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

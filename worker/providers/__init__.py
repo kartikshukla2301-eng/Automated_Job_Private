@@ -20,6 +20,22 @@ from worker.providers.naukri import (
     NaukriSessionManager,
     NaukriSessionStatus,
 )
+from worker.providers.wellfound import (
+    WellfoundDiscoveryAdapter,
+    WellfoundProvider,
+    WellfoundSessionManager,
+    WellfoundSessionStatus,
+)
+from worker.providers.ashby import (
+    AshbyDiscoveryAdapter,
+    AshbyProvider,
+)
+from worker.providers.registry import (
+    ProviderMetadata,
+    ProviderRegistrationError,
+    ProviderRegistry,
+    create_default_registry,
+)
 
 __all__ = [
     "FormField",
@@ -33,6 +49,16 @@ __all__ = [
     "NaukriProvider",
     "NaukriSessionManager",
     "NaukriSessionStatus",
+    "WellfoundDiscoveryAdapter",
+    "WellfoundProvider",
+    "WellfoundSessionManager",
+    "WellfoundSessionStatus",
+    "AshbyDiscoveryAdapter",
+    "AshbyProvider",
+    "ProviderMetadata",
+    "ProviderRegistrationError",
+    "ProviderRegistry",
+    "create_default_registry",
     "ProviderDataError",
     "ProviderError",
     "ProviderNetworkError",

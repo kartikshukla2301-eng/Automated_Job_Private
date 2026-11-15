@@ -31,6 +31,11 @@ class BrowserConfig(BaseModel):
             "jobs.lever.co",
             "naukri.com",
             "www.naukri.com",
+            "wellfound.com",
+            "www.wellfound.com",
+            "angel.co",
+            "ashbyhq.com",
+            "jobs.ashbyhq.com",
         ],
         description="Explicit list of approved job board application domains",
     )

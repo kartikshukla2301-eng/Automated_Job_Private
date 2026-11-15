@@ -26,6 +26,11 @@ DEFAULT_ALLOWED_DOMAINS: Set[str] = {
     "jobs.lever.co",
     "naukri.com",
     "www.naukri.com",
+    "wellfound.com",
+    "www.wellfound.com",
+    "angel.co",
+    "ashbyhq.com",
+    "jobs.ashbyhq.com",
 }
 
 DISALLOWED_SCHEMES: Set[str] = {

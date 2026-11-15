@@ -11,11 +11,22 @@ import re
 from typing import Optional, Set
 from urllib.parse import urlsplit
 
-# Approved hostnames for external public job discovery API calls
+# Approved hostnames for external public job discovery API calls and canonical job URLs
 ALLOWED_DISCOVERY_HOSTS: Set[str] = {
     "boards-api.greenhouse.io",
     "api.greenhouse.io",
+    "boards.greenhouse.io",
+    "job-boards.greenhouse.io",
     "api.lever.co",
+    "jobs.lever.co",
+    "naukri.com",
+    "www.naukri.com",
+    "wellfound.com",
+    "www.wellfound.com",
+    "angel.co",
+    "ashbyhq.com",
+    "jobs.ashbyhq.com",
+    "api.ashbyhq.com",
 }
 
 # Regex to strip HTML script, style, and iframe blocks along with their contents

@@ -1,0 +1,36 @@
+{
+  "jobs": [
+    {
+      "id": "ashby-401",
+      "title": "Senior Platform Engineer",
+      "department": "Infrastructure",
+      "locationName": "San Francisco, CA (Remote)",
+      "isRemote": true,
+      "employmentType": "FullTime",
+      "compensation": {
+        "summary": "$160,000 - $195,000 USD",
+        "currency": "USD"
+      },
+      "jobUrl": "https://jobs.ashbyhq.com/cloudscale/401?source=board",
+      "publishedAt": "2026-03-03T14:00:00Z",
+      "descriptionHtml": "<p>Join CloudScale Systems as a Senior Platform Engineer building reliable Kubernetes and AWS infrastructure.</p>",
+      "company": "CloudScale Systems"
+    },
+    {
+      "id": "ashby-402",
+      "title": "Site Reliability Engineer",
+      "department": "Operations",
+      "locationName": "Bangalore, India",
+      "isRemote": false,
+      "employmentType": "FullTime",
+      "compensation": {
+        "summary": "₹28,00,000 - ₹35,00,000 INR",
+        "currency": "INR"
+      },
+      "jobUrl": "https://jobs.ashbyhq.com/cloudscale/402",
+      "publishedAt": "2026-03-02T11:00:00Z",
+      "descriptionHtml": "<p>Ensure 99.99% availability of global microservices architecture.</p>",
+      "company": "CloudScale Systems"
+    }
+  ]
+}

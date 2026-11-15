@@ -165,3 +165,12 @@
   - Implemented `AutonomyController` managing staged autonomy progression (L0->L1->L2->L3) with strict promotion criteria (30 apps, >=98% accuracy, 0 sensitive errors, 0 duplicates) and automatic demotion on safety violation.
   - Implemented capacity stage evaluation (S0->S1) enforcing locked daily cap (2 applications/day).
   - Expanded automated backend test suite from 350 to 364 passing tests (+14 comprehensive Phase 1.6 tests across `tests/test_naukri_provider.py` and `tests/test_autonomy_ramp.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 1.7: Implemented Wellfound & Ashby Provider Adapters and Central Provider Registry (`worker/providers/wellfound.py`, `worker/providers/ashby.py`, `worker/providers/lever.py`, `worker/providers/registry.py`, `tests/`) per locked architecture Section 10, Section 11, and Section 12.
+  - Implemented `WellfoundSessionManager` managing authenticated session tokens and cookies in `worker/sessions/wellfound/cookies.json` with strict password/secret rejection.
+  - Implemented `WellfoundDiscoveryAdapter` normalizing startup listings into canonical Job models, parsing salary/equity ranges, and detecting already-applied status.
+  - Implemented `WellfoundProvider` supporting Playwright-driven form inspection and L0 dry-run execution while rejecting real submissions.
+  - Implemented `AshbyDiscoveryAdapter` parsing Ashby job postings into canonical Job models, extracting company identifiers from job URLs, and parsing salary ranges.
+  - Implemented `AshbyProvider` and `LeverProvider` supporting Playwright-driven form inspection and L0 dry-run execution while rejecting real submissions.
+  - Updated `NavigationGuard`, `BrowserConfig`, and `ALLOWED_DISCOVERY_HOSTS` to permit `wellfound.com`, `www.wellfound.com`, `angel.co`, `ashbyhq.com`, `jobs.ashbyhq.com`, and `api.ashbyhq.com`.
+  - Implemented central `ProviderRegistry` (`worker/providers/registry.py`) providing unified management of provider metadata, discovery adapters, execution providers, and automatic provider detection from job URLs.
+  - Expanded automated backend test suite from 364 to 377 passing tests (+13 comprehensive Phase 1.7 tests across `tests/test_wellfound_provider.py`, `tests/test_ashby_provider.py`, and `tests/test_provider_registry.py`). All 2 frontend unit tests and ESLint checks passing.

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Staff Backend Engineer at Stealth AI - Wellfound Application</title>
+</head>
+<body>
+  <div class="wellfound-application-container">
+    <div class="header">
+      <h1 class="job-title">Staff Backend Engineer</h1>
+      <span class="company-name">Stealth AI</span>
+      <span class="location">Remote, US / Bangalore</span>
+    </div>
+
+    <form id="wellfound-apply-form" action="/jobs/apply" method="POST">
+      <div class="form-group">
+        <label for="wf_first_name">First Name <span class="required">*</span></label>
+        <input type="text" id="wf_first_name" name="firstName" required autocomplete="given-name">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_last_name">Last Name <span class="required">*</span></label>
+        <input type="text" id="wf_last_name" name="lastName" required autocomplete="family-name">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_email">Email <span class="required">*</span></label>
+        <input type="email" id="wf_email" name="email" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_phone">Phone <span class="required">*</span></label>
+        <input type="tel" id="wf_phone" name="phone" required autocomplete="tel">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_linkedin">LinkedIn URL</label>
+        <input type="url" id="wf_linkedin" name="linkedinUrl">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_github">GitHub URL</label>
+        <input type="url" id="wf_github" name="githubUrl">
+      </div>
+
+      <div class="form-group">
+        <label for="wf_notice">Notice Period (Days) <span class="required">*</span></label>
+        <input type="text" id="wf_notice" name="noticePeriodDays" required>
+      </div>
+
+      <div class="form-group">
+        <label for="wf_pitch">Why are you interested in Stealth AI?</label>
+        <textarea id="wf_pitch" name="startupPitch" rows="4"></textarea>
+      </div>
+
+      <!-- File upload must be skipped by L0 / policy -->
+      <div class="form-group">
+        <label for="wf_resume">Resume</label>
+        <input type="file" id="wf_resume" name="resumeFile">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="wf-submit-button" class="btn-apply">Send Application</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

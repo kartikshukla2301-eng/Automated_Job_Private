@@ -1,0 +1,36 @@
+{
+  "jobs": [
+    {
+      "id": "wf-8901",
+      "slug": "staff-backend-engineer-stealth-ai",
+      "title": "Staff Backend Engineer",
+      "company_name": "Stealth AI",
+      "company_slug": "stealth-ai",
+      "location": "Bangalore, India",
+      "remote": true,
+      "job_type": "full-time",
+      "experience_years": "5+ years",
+      "compensation": "$140k – $180k • 0.25% – 0.5%",
+      "description": "<p>Stealth AI is looking for a Staff Backend Engineer experienced in Python, distributed systems, and real-time streaming.</p>",
+      "posted_at": "2026-03-05T08:00:00Z",
+      "already_applied": false,
+      "url": "https://wellfound.com/jobs/8901-staff-backend-engineer?utm_campaign=board"
+    },
+    {
+      "id": "wf-8902",
+      "slug": "frontend-developer-nebula-tech",
+      "title": "Senior Frontend Developer",
+      "company_name": "Nebula Tech",
+      "company_slug": "nebula-tech",
+      "location": "Remote - Worldwide",
+      "remote": true,
+      "job_type": "full-time",
+      "experience_years": "4+ years",
+      "compensation": "$110k – $140k",
+      "description": "<p>Build Next.js web applications with modern design systems and TypeScript.</p>",
+      "posted_at": "2026-03-04T10:00:00Z",
+      "already_applied": true,
+      "url": "https://wellfound.com/jobs/8902-senior-frontend-developer"
+    }
+  ]
+}
