@@ -1,5 +1,13 @@
 # Changelog
 
+## Phase 2.6 — Operations, Notifications, Observability & Recovery
+- Enhanced `TelegramNotificationService` with bounded retries and exponential backoff (`_send_with_retries`).
+- Implemented `AlertDeduplicator` suppressing identical repeating alerts within configurable cooldown windows.
+- Added `NotificationDeliveryRecord` and `NotificationOutbox` to queue failed alerts and flush upon connectivity restoration.
+- Centralized structured logging with `run_id_ctx`, `application_id_ctx`, `provider_ctx`, `bind_logging_context`, and `format_audit_log` with automatic PII scrubbing (`services/api/logging_config.py`).
+- Implemented `BackupManager`, `BackupBundle`, and `BackupMetadata` with SHA-256 cryptographic checksums, integrity validation, and fail-closed restore procedures (`worker/ops/backup.py`).
+- Added unit tests in `tests/test_ops_backup_and_observability.py`; 430 backend tests passed, 2 frontend tests passed, ESLint clean.
+
 ## Phase 2.5 — Matching Calibration, Answer Quality Analytics & Golden Questions
 - Implemented strongly typed `CalibrationSample` and `CalibrationReport` models with precision, recall, false positive rate (FPR), false negative rate (FNR), F1 score, score percentiles, and segment breakdowns (`worker/matching/calibration.py`).
 - Added canonical 50-job human-reviewed calibration benchmark spanning platform, backend, and fullstack roles across remote, hybrid, and onsite work modes.

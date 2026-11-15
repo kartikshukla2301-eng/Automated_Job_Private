@@ -6,16 +6,67 @@ import re
 import sys
 import time
 import uuid
+from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
-# Context variable tracking current request ID
+# Context variables tracking current operational request & execution context
 request_id_ctx: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+run_id_ctx: ContextVar[Optional[str]] = ContextVar("run_id", default=None)
+application_id_ctx: ContextVar[Optional[str]] = ContextVar("application_id", default=None)
+provider_ctx: ContextVar[Optional[str]] = ContextVar("provider", default=None)
+
+
+@contextmanager
+def bind_logging_context(
+    run_id: Optional[str] = None,
+    application_id: Optional[str] = None,
+    provider: Optional[str] = None,
+    request_id: Optional[str] = None,
+):
+    """Context manager to bind trace variables into logging context for the scope."""
+    tokens = []
+    if run_id is not None:
+        tokens.append((run_id_ctx, run_id_ctx.set(run_id)))
+    if application_id is not None:
+        tokens.append((application_id_ctx, application_id_ctx.set(application_id)))
+    if provider is not None:
+        tokens.append((provider_ctx, provider_ctx.set(provider)))
+    if request_id is not None:
+        tokens.append((request_id_ctx, request_id_ctx.set(request_id)))
+    try:
+        yield
+    finally:
+        for var, token in reversed(tokens):
+            var.reset(token)
+
+
+def format_audit_log(
+    event_type: str,
+    actor: str,
+    action: str,
+    target_type: str,
+    target_id: Optional[str] = None,
+    details: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Format standardized, auditable security and operational events with PII redaction."""
+    return {
+        "event_type": event_type,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "actor": actor,
+        "action": action,
+        "target_type": target_type,
+        "target_id": target_id,
+        "details": redact_sensitive_data(details or {}),
+        "run_id": run_id_ctx.get(),
+        "application_id": application_id_ctx.get(),
+        "provider": provider_ctx.get(),
+    }
 
 # Sensitive keys and patterns to redact from logs
 SENSITIVE_KEYS = {
@@ -88,6 +139,9 @@ class JSONFormatter(logging.Formatter):
             "logger": record.name,
             "message": record.getMessage(),
             "request_id": request_id_ctx.get(),
+            "run_id": run_id_ctx.get(),
+            "application_id": application_id_ctx.get(),
+            "provider": provider_ctx.get(),
         }
 
         # Include custom extra attributes passed to logger calls

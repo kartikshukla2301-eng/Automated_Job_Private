@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
+from enum import Enum
+import hashlib
 import logging
 import re
 from typing import Any, Callable, Dict, List, Optional, Set
-from uuid import UUID
+from uuid import UUID, uuid4
+from pydantic import BaseModel, ConfigDict, Field
 
 from worker.application.models import Application, ApplicationStatus
 from worker.ops.approval import ApprovalManager
@@ -22,6 +25,115 @@ logger = logging.getLogger(__name__)
 
 class TelegramSecurityError(Exception):
     """Raised when an unauthorized Telegram user or chat attempts an operation."""
+
+
+class DeliveryStatus(str, Enum):
+    """Status of notification delivery."""
+
+    SENT = "SENT"
+    FAILED = "FAILED"
+    SUPPRESSED = "SUPPRESSED"
+    QUEUED = "QUEUED"
+
+
+class NotificationDeliveryRecord(BaseModel):
+    """Record tracking notification dispatch attempts, status, and metadata."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    record_id: str = Field(default_factory=lambda: uuid4().hex)
+    text: str
+    target_chat_id: Optional[int] = None
+    status: DeliveryStatus = DeliveryStatus.QUEUED
+    attempts: int = 0
+    max_retries: int = 3
+    last_error: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    delivered_at: Optional[datetime] = None
+
+
+class AlertDeduplicator:
+    """Suppresses duplicate or repeating alert bursts within a configurable time window."""
+
+    def __init__(self, cooldown_seconds: int = 600) -> None:
+        self.cooldown_seconds = cooldown_seconds
+        self._recent_alerts: Dict[str, datetime] = {}
+
+    def _hash_alert(self, text: str, chat_id: Optional[int]) -> str:
+        # Normalize whitespace and compute stable content hash
+        norm_text = re.sub(r"\s+", " ", text.strip())
+        key = f"{chat_id}:{norm_text}"
+        return hashlib.sha256(key.encode("utf-8")).hexdigest()
+
+    def is_duplicate(self, text: str, chat_id: Optional[int], as_of: Optional[datetime] = None) -> bool:
+        """Return True if an identical alert was recorded within the cooldown window."""
+        now = as_of or datetime.now(timezone.utc)
+        alert_hash = self._hash_alert(text, chat_id)
+        last_sent = self._recent_alerts.get(alert_hash)
+
+        if last_sent is not None:
+            elapsed = (now - last_sent).total_seconds()
+            if elapsed < self.cooldown_seconds:
+                return True
+
+        self._recent_alerts[alert_hash] = now
+        # Prune entries older than 2x cooldown to prevent memory bloat
+        cutoff = now.timestamp() - (self.cooldown_seconds * 2)
+        self._recent_alerts = {k: v for k, v in self._recent_alerts.items() if v.timestamp() > cutoff}
+        return False
+
+
+class NotificationOutbox:
+    """Maintains a failure/outbox queue of undelivered notifications for recovery."""
+
+    def __init__(self) -> None:
+        self._records: Dict[str, NotificationDeliveryRecord] = {}
+
+    def enqueue(self, record: NotificationDeliveryRecord) -> None:
+        self._records[record.record_id] = record
+
+    def get_record(self, record_id: str) -> Optional[NotificationDeliveryRecord]:
+        return self._records.get(record_id)
+
+    def get_pending(self) -> List[NotificationDeliveryRecord]:
+        return [r for r in self._records.values() if r.status in (DeliveryStatus.QUEUED, DeliveryStatus.FAILED)]
+
+    def get_all(self) -> List[NotificationDeliveryRecord]:
+        return list(self._records.values())
+
+    async def flush(
+        self,
+        notifier: TelegramNotifier,
+        max_retries: int = 3,
+        backoff_base: float = 0.05,
+    ) -> int:
+        """Retry sending queued notifications up to max_retries with exponential backoff."""
+        pending = self.get_pending()
+        flushed_count = 0
+
+        for r in pending:
+            if r.attempts >= max_retries:
+                r.status = DeliveryStatus.FAILED
+                continue
+
+            r.attempts += 1
+            try:
+                success = await notifier.send_message(r.text, r.target_chat_id)
+                if success:
+                    r.status = DeliveryStatus.SENT
+                    r.delivered_at = datetime.now(timezone.utc)
+                    flushed_count += 1
+                else:
+                    r.status = DeliveryStatus.FAILED
+                    r.last_error = "Notifier returned False"
+            except Exception as ex:
+                r.last_error = str(ex)
+                r.status = DeliveryStatus.FAILED
+
+            if r.status != DeliveryStatus.SENT and backoff_base > 0:
+                await asyncio.sleep(backoff_base * (2 ** (r.attempts - 1)))
+
+        return flushed_count
 
 
 class TelegramNotifier:
@@ -54,6 +166,10 @@ class TelegramNotificationService:
         approval_manager: Optional[ApprovalManager] = None,
         kill_switch: Optional[Any] = None,
         provider_health_mgr: Optional[Any] = None,
+        deduplicator: Optional[AlertDeduplicator] = None,
+        outbox: Optional[NotificationOutbox] = None,
+        max_retries: int = 3,
+        retry_backoff_base: float = 0.05,
     ) -> None:
         self.bot_token = bot_token
         self.allowed_chat_ids: Set[int] = set(allowed_chat_ids or [])
@@ -62,6 +178,10 @@ class TelegramNotificationService:
         self.approval_manager = approval_manager
         self.kill_switch = kill_switch
         self.provider_health_mgr = provider_health_mgr
+        self.deduplicator = deduplicator or AlertDeduplicator()
+        self.outbox = outbox or NotificationOutbox()
+        self.max_retries = max(1, max_retries)
+        self.retry_backoff_base = retry_backoff_base
 
     # -------------------------------------------------------------------------
     # Outbound Notifications (Never expose raw PII or credentials)
@@ -208,29 +328,87 @@ class TelegramNotificationService:
         )
         return await self._dispatch_alert(msg, chat_id)
 
+    async def _send_with_retries(self, text: str, cid: Optional[int]) -> bool:
+        """Send message to a single chat ID with bounded retries and exponential backoff."""
+        last_error = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                sent = await self.notifier.send_message(text, cid)
+                if sent:
+                    return True
+                last_error = "Notifier returned False"
+            except Exception as ex:
+                last_error = str(ex)
+                logger.warning(
+                    "Telegram send attempt %d/%d failed for chat_id=%s: %s",
+                    attempt,
+                    self.max_retries,
+                    cid,
+                    ex,
+                )
+
+            if attempt < self.max_retries and self.retry_backoff_base > 0:
+                await asyncio.sleep(self.retry_backoff_base * (2 ** (attempt - 1)))
+
+        raise RuntimeError(f"All {self.max_retries} attempts failed: {last_error}")
+
     async def _dispatch_alert(self, text: str, target_chat_id: Optional[int] = None) -> bool:
-        """Safely dispatch notification with error containment (never crashes calling flow)."""
+        """Safely dispatch notification with deduplication, retries, and outbox failure containment."""
         try:
+            # 1. Duplicate alert suppression
+            if self.deduplicator.is_duplicate(text, target_chat_id):
+                logger.info("Suppressed duplicate alert (chat_id=%s): %s", target_chat_id, text[:60])
+                record = NotificationDeliveryRecord(
+                    text=text,
+                    target_chat_id=target_chat_id,
+                    status=DeliveryStatus.SUPPRESSED,
+                    delivered_at=datetime.now(timezone.utc),
+                )
+                self.outbox.enqueue(record)
+                return True
+
+            # 2. Authorization filter
+            targets: List[Optional[int]]
             if target_chat_id:
                 if target_chat_id not in self.allowed_chat_ids and self.allowed_chat_ids:
                     logger.warning("Rejecting outbound alert to unauthorized chat_id=%s", target_chat_id)
                     return False
-                return await self.notifier.send_message(text, target_chat_id)
+                targets = [target_chat_id]
+            else:
+                targets = list(self.allowed_chat_ids) if self.allowed_chat_ids else [None]
 
-            if not self.allowed_chat_ids:
-                # Dispatch to default mock
-                return await self.notifier.send_message(text, None)
+            # 3. Dispatch to all targets with retries
+            overall_success = True
+            for cid in targets:
+                record = NotificationDeliveryRecord(
+                    text=text,
+                    target_chat_id=cid,
+                    max_retries=self.max_retries,
+                )
+                try:
+                    await self._send_with_retries(text, cid)
+                    record.status = DeliveryStatus.SENT
+                    record.delivered_at = datetime.now(timezone.utc)
+                except Exception as err:
+                    overall_success = False
+                    record.status = DeliveryStatus.FAILED
+                    record.last_error = str(err)
+                    logger.error("Failed to deliver alert to chat_id=%s after retries: %s", cid, err)
+                finally:
+                    self.outbox.enqueue(record)
 
-            # Broadcast to all allowed owner chat IDs
-            success = True
-            for cid in self.allowed_chat_ids:
-                sent = await self.notifier.send_message(text, cid)
-                if not sent:
-                    success = False
-            return success
+            return overall_success
         except Exception as err:
             logger.error("Telegram notification failed (fail-safe): %s", err)
             return False
+
+    async def flush_outbox(self) -> int:
+        """Retry sending any queued or failed notifications in the outbox."""
+        return await self.outbox.flush(
+            self.notifier,
+            max_retries=self.max_retries,
+            backoff_base=self.retry_backoff_base,
+        )
 
     # -------------------------------------------------------------------------
     # Inbound Command Processing (Strict allowlist & authorization)
