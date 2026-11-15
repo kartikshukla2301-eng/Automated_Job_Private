@@ -24,6 +24,8 @@ DEFAULT_ALLOWED_DOMAINS: Set[str] = {
     "boards.greenhouse.io",
     "job-boards.greenhouse.io",
     "jobs.lever.co",
+    "naukri.com",
+    "www.naukri.com",
 }
 
 DISALLOWED_SCHEMES: Set[str] = {

@@ -11,6 +11,12 @@ Provides:
 """
 
 from worker.ops.approval import ApprovalManager
+from worker.ops.autonomy import (
+    AutonomyController,
+    AutonomyEligibilityReport,
+    CapacityStage,
+    CapacityStageReport,
+)
 from worker.ops.canary import CanaryResult, ProviderCanaryRunner
 from worker.ops.config_manager import PersistentConfigManager
 from worker.ops.heartbeat import HeartbeatManager, HeartbeatStatus

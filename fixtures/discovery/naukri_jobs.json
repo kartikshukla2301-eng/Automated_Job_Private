@@ -1,0 +1,26 @@
+[
+  {
+    "jobId": "naukri-101",
+    "title": "Senior Python Backend Engineer",
+    "companyName": "TechCorp India",
+    "location": "Bengaluru / Bangalore",
+    "jobDescription": "We are seeking a Senior Python Backend Engineer with 4+ years of experience in FastAPI and PostgreSQL.",
+    "experience": "4 - 7 years",
+    "salary": "2,000,000 - 3,000,000 PA",
+    "createdDate": "2026-11-14T10:00:00Z",
+    "staticUrl": "https://www.naukri.com/job-listings-senior-python-backend-engineer-techcorp-india-bengaluru-bangalore-4-to-7-years-101",
+    "workplaceType": "hybrid"
+  },
+  {
+    "jobId": "naukri-102",
+    "title": "Lead Full Stack Developer",
+    "companyName": "CloudScale Systems",
+    "location": "Remote",
+    "jobDescription": "Full stack lead required to build Next.js frontends and Python microservices.",
+    "experience": "6 - 10 years",
+    "salary": "Not Disclosed",
+    "createdDate": "2026-11-15T08:00:00Z",
+    "staticUrl": "https://www.naukri.com/job-listings-lead-full-stack-developer-cloudscale-systems-remote-6-to-10-years-102",
+    "workplaceType": "remote"
+  }
+]

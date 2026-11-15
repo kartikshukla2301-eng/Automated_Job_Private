@@ -29,6 +29,8 @@ class BrowserConfig(BaseModel):
             "boards.greenhouse.io",
             "job-boards.greenhouse.io",
             "jobs.lever.co",
+            "naukri.com",
+            "www.naukri.com",
         ],
         description="Explicit list of approved job board application domains",
     )

@@ -168,19 +168,27 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Implemented `RealSubmitReadinessEvaluator` (`worker/ops/readiness.py`): non-executable evaluator checking the 8 locked architecture criteria while keeping `real_submit_gate_enabled = False` hardcoded.
   - Implemented scoped FastAPI routes in `services/api/routes/ops.py`.
   - Total test coverage: 350 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+- Phase 1.6 complete: Naukri Provider & Autonomy Ramp Foundation.
+  - Implemented `NaukriSessionManager` managing authenticated session states, persistent cookie isolation, manual login verification, and strictly zero password storage.
+  - Implemented `NaukriDiscoveryAdapter` for normalized job ingestion, content hashing, and cross-platform canonical deduplication.
+  - Implemented `NaukriProvider` supporting Playwright-driven form inspection and L0 dry-run execution while rejecting real submissions.
+  - Updated `NavigationGuard` and browser configurations to permit `naukri.com` and `www.naukri.com` domains.
+  - Implemented `AutonomyController` managing staged autonomy progression (L0->L1->L2->L3) with strict promotion criteria (30 apps, >=98% accuracy, 0 sensitive errors, 0 duplicates) and automatic demotion on safety violation.
+  - Implemented capacity stage evaluation (S0->S1) enforcing locked daily cap (2 applications/day).
+  - Total test coverage: 364 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
 ### In progress
-- None (Phase 1.5 complete; proceeding to Phase 1.6).
+- None (Phase 1.6 complete; proceeding to Phase 1.7).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.5).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.6).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
-- Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
+- Live Greenhouse, Lever, and Naukri external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.6: Naukri Provider & Autonomy Ramp Foundation.
+1. Phase 1.7: Wellfound and Ashby Provider Adapters.
 
 ## End-of-session handoff template
 - Task and date/time

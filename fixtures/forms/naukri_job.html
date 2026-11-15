@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Senior Software Engineer - TechCorp India | Naukri.com</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; max-width: 400px; padding: 8px; }
+    .apply-btn { background: #0073b1; color: white; padding: 10px 20px; border: none; }
+    .already-applied { color: #d9534f; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Senior Software Engineer</h1>
+  <h2>TechCorp India - Bangalore / Bengaluru</h2>
+  <div class="job-description">
+    <p>Looking for a Senior Python / Full Stack Engineer with 4+ years of experience in FastAPI and React.</p>
+  </div>
+
+  <form id="naukri-apply-form" action="/apply" method="POST">
+    <div class="form-group">
+      <label for="fullname">Full Name *</label>
+      <input type="text" id="fullname" name="fullname" required placeholder="Enter your full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address *</label>
+      <input type="email" id="email" name="email" required placeholder="name@example.com" />
+    </div>
+
+    <div class="form-group">
+      <label for="mobile">Mobile Number *</label>
+      <input type="tel" id="mobile" name="mobile" required placeholder="10-digit mobile number" />
+    </div>
+
+    <div class="form-group">
+      <label for="experience_years">Total Experience *</label>
+      <select id="experience_years" name="experience_years" required>
+        <option value="">Select Experience</option>
+        <option value="1">1 year</option>
+        <option value="2">2 years</option>
+        <option value="3">3 years</option>
+        <option value="4">4 years</option>
+        <option value="5+">5+ years</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="current_location">Current Location *</label>
+      <input type="text" id="current_location" name="current_location" required value="Bangalore" />
+    </div>
+
+    <div class="form-group">
+      <label for="notice_period">Notice Period</label>
+      <select id="notice_period" name="notice_period">
+        <option value="Immediate">Immediate</option>
+        <option value="15 Days">15 Days</option>
+        <option value="30 Days">30 Days</option>
+        <option value="60 Days">60 Days</option>
+        <option value="90 Days">90 Days</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="expected_ctc">Expected Annual CTC (INR)</label>
+      <input type="text" id="expected_ctc" name="expected_ctc" placeholder="e.g. 2,000,000" />
+    </div>
+
+    <div class="form-group">
+      <label for="skills">Key Technical Skills</label>
+      <textarea id="skills" name="skills" rows="3" placeholder="Python, FastAPI, React, PostgreSQL"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="work_authorization">Are you legally authorized to work in India? *</label>
+      <select id="work_authorization" name="work_authorization" required>
+        <option value="">Select option</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+
+    <button type="submit" id="submit-btn" class="apply-btn">Apply Now</button>
+  </form>
+</body>
+</html>

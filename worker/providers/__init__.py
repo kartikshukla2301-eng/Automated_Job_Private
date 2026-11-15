@@ -14,6 +14,12 @@ from worker.providers.exceptions import (
 from worker.providers.greenhouse import GreenhouseProvider
 from worker.providers.greenhouse_discovery import GreenhouseDiscoveryAdapter
 from worker.providers.lever_discovery import LeverDiscoveryAdapter
+from worker.providers.naukri import (
+    NaukriDiscoveryAdapter,
+    NaukriProvider,
+    NaukriSessionManager,
+    NaukriSessionStatus,
+)
 
 __all__ = [
     "FormField",
@@ -23,6 +29,10 @@ __all__ = [
     "JobDiscoveryAdapter",
     "JobProvider",
     "LeverDiscoveryAdapter",
+    "NaukriDiscoveryAdapter",
+    "NaukriProvider",
+    "NaukriSessionManager",
+    "NaukriSessionStatus",
     "ProviderDataError",
     "ProviderError",
     "ProviderNetworkError",

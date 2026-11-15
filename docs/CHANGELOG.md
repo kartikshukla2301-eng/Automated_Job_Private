@@ -157,3 +157,11 @@
   - Implemented `RealSubmitReadinessEvaluator` in `worker/ops/readiness.py`: non-executable evaluator checking the 8 locked architecture criteria (`READY`, `NOT_READY`, `BLOCKED`, `UNVERIFIED`) while keeping `real_submit_gate_enabled = False` hardcoded.
   - Implemented scoped FastAPI routes in `services/api/routes/ops.py` (`/api/v1/ops/approvals`, `/resolve-input`, `/provider-health`, `/pause`, `/resume`, `/heartbeat`, `/pulse`, `/canaries/{provider}/run`, `/metrics`, `/readiness`, `/telegram/webhook`).
   - Expanded automated backend test suite from 317 to 350 passing tests (+33 comprehensive Phase 1.5 tests across `tests/test_ops_approval.py`, `tests/test_ops_telegram.py`, `tests/test_ops_provider_health_and_canary.py`, `tests/test_ops_scheduler_and_heartbeat.py`, `tests/test_ops_metrics_and_readiness.py`, and `tests/test_ops_api.py`). All 2 frontend unit tests and ESLint checks passing.
+- Phase 1.6: Implemented Naukri Provider & Autonomy Ramp Foundation (`worker/providers/naukri.py`, `worker/ops/autonomy.py`, `tests/`) per locked architecture Section 9, Section 11, and Section 14.
+  - Implemented `NaukriSessionManager` managing authenticated session states, persistent cookie isolation, manual login verification, and strictly zero password storage.
+  - Implemented `NaukriDiscoveryAdapter` for normalized job ingestion, content hashing, and cross-platform canonical deduplication.
+  - Implemented `NaukriProvider` supporting Playwright-driven form inspection and L0 dry-run execution while rejecting real submissions.
+  - Updated `NavigationGuard` and browser configurations to permit `naukri.com` and `www.naukri.com` domains.
+  - Implemented `AutonomyController` managing staged autonomy progression (L0->L1->L2->L3) with strict promotion criteria (30 apps, >=98% accuracy, 0 sensitive errors, 0 duplicates) and automatic demotion on safety violation.
+  - Implemented capacity stage evaluation (S0->S1) enforcing locked daily cap (2 applications/day).
+  - Expanded automated backend test suite from 350 to 364 passing tests (+14 comprehensive Phase 1.6 tests across `tests/test_naukri_provider.py` and `tests/test_autonomy_ramp.py`). All 2 frontend unit tests and ESLint checks passing.
