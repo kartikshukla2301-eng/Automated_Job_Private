@@ -181,3 +181,57 @@ class FormInspectionRequest(BaseModel):
     job_url_or_path: Optional[str] = Field(default=None, description="Target job fixture or URL to inspect")
     company: str = Field(default="Example Company", max_length=100)
     provider_name: str = Field(default="greenhouse", max_length=50)
+
+
+class ResolveUserInputRequest(BaseModel):
+    """Request schema for submitting user answers to an application in NEEDS_USER_INPUT."""
+
+    model_config = {"extra": "forbid"}
+
+    user_id: UUID = Field(..., description="Owner user UUID")
+    answers: Dict[str, Any] = Field(..., description="Map of field_id/key to candidate provided answers")
+
+
+class TelegramWebhookRequest(BaseModel):
+    """Request schema for inbound Telegram webhook commands."""
+
+    model_config = {"extra": "forbid"}
+
+    chat_id: int
+    command_text: str
+    user_id: UUID
+
+
+class TelegramCommandResponse(BaseModel):
+    success: bool
+    response_text: str
+
+
+class ProviderHealthResponse(BaseModel):
+    provider_name: str
+    status: str
+    consecutive_failures: int
+    successful_inspections: int
+    navigation_failures: int
+    selector_failures: int
+    browser_crashes: int
+    timeouts: int
+    last_failure_reason: Optional[str] = None
+    pause_reason: Optional[str] = None
+
+
+class HeartbeatResponse(BaseModel):
+    worker_id: str
+    status: str
+    last_heartbeat: str
+    last_successful_run: Optional[str] = None
+    total_runs_completed: int
+
+
+class ReadinessReportResponse(BaseModel):
+    generated_at: str
+    overall_status: str
+    real_submit_gate_enabled: bool
+    summary: str
+    criteria: List[Dict[str, Any]]
+

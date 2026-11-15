@@ -156,17 +156,31 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Added realistic offline Lever test fixture in `fixtures/forms/lever_job.html`.
   - Total test coverage: 317 backend tests passing (pytest), 2 frontend tests passing (Vitest).
 
+- Phase 1.5 complete: Human-in-the-Loop & Operations Foundation (`worker/ops/`, `services/api/routes/ops.py`, `tests/`).
+  - Implemented `ApprovalManager` (`worker/ops/approval.py`): user approval queue, server-side ownership verification, expiration TTL handling, and candidate missing answers workflow (`NEEDS_USER_INPUT` -> `FILLING`).
+  - Implemented `TelegramNotificationService` (`worker/ops/telegram.py`): privacy-safe operational alerts and owner command parser (`/pause`, `/resume`, `/kill`, `/status`, `/approve`, `/reject`) with chat ID allowlist and mock adapter fallback.
+  - Implemented `PersistentConfigManager` (`worker/ops/config_manager.py`): thread-safe JSON-persisted safety config for caps, cooldowns, autonomy levels, matching thresholds, and daily LLM budgets with strict bounds validation.
+  - Implemented `ProviderHealthManager` (`worker/ops/provider_health.py`): failure counter tracking with auto-pause on 3 consecutive errors and isolated recovery.
+  - Implemented `HeartbeatManager` (`worker/ops/heartbeat.py`): worker pulse and dead-man alert during IST active hours (09:00-23:00).
+  - Implemented `ProviderCanaryRunner` (`worker/ops/canary.py`): fixture drift detection on Greenhouse and Lever forms without submitting or personal data.
+  - Implemented `RunScheduler` (`worker/ops/scheduler.py`): single-run concurrency lock, IST active window enforcement, jitter delay, and catch-up discovery.
+  - Implemented `MetricsAggregator` (`worker/ops/metrics.py`): truthful operational metrics derived from stored records.
+  - Implemented `RealSubmitReadinessEvaluator` (`worker/ops/readiness.py`): non-executable evaluator checking the 8 locked architecture criteria while keeping `real_submit_gate_enabled = False` hardcoded.
+  - Implemented scoped FastAPI routes in `services/api/routes/ops.py`.
+  - Total test coverage: 350 backend tests passing (pytest), 2 frontend tests passing (Vitest).
+
 ### In progress
-- None (Phase 1.4 complete).
+- None (Phase 1.5 complete; proceeding to Phase 1.6).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.4).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–1.5).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
+- Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
 - Live Greenhouse and Lever external HTTP requests (verified via mocked HTTP transport and local JSON fixtures offline; no live external network requests initiated during tests).
 - Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Phase 1.5: Job Search Automation and End-to-End Orchestration (Awaiting user review and instruction; do not proceed automatically).
+1. Phase 1.6: Naukri Provider & Autonomy Ramp Foundation.
 
 ## End-of-session handoff template
 - Task and date/time

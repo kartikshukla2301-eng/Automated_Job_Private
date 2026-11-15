@@ -207,3 +207,92 @@ def get_browser_manager():
 
         _browser_manager = BrowserManager()
     return _browser_manager
+
+
+_provider_health_mgr = None
+_heartbeat_mgr = None
+
+
+def get_provider_health_manager():
+    """Provide singleton ProviderHealthManager."""
+    global _provider_health_mgr
+    if _provider_health_mgr is None:
+        from worker.ops.provider_health import ProviderHealthManager
+
+        _provider_health_mgr = ProviderHealthManager()
+    return _provider_health_mgr
+
+
+def get_heartbeat_manager():
+    """Provide singleton HeartbeatManager."""
+    global _heartbeat_mgr
+    if _heartbeat_mgr is None:
+        from worker.ops.heartbeat import HeartbeatManager
+
+        _heartbeat_mgr = HeartbeatManager()
+    return _heartbeat_mgr
+
+
+def get_approval_manager(
+    orchestrator=Depends(get_application_orchestrator),
+    app_repo=Depends(get_application_repository),
+    event_repo=Depends(get_application_event_repository),
+):
+    """Provide configured ApprovalManager."""
+    from worker.ops.approval import ApprovalManager
+
+    return ApprovalManager(
+        orchestrator=orchestrator,
+        application_repo=app_repo,
+        event_repo=event_repo,
+    )
+
+
+def get_canary_runner(health_mgr=Depends(get_provider_health_manager)):
+    """Provide ProviderCanaryRunner."""
+    from worker.ops.canary import ProviderCanaryRunner
+
+    return ProviderCanaryRunner(health_mgr=health_mgr)
+
+
+def get_metrics_aggregator(
+    app_repo=Depends(get_application_repository),
+    event_repo=Depends(get_application_event_repository),
+    health_mgr=Depends(get_provider_health_manager),
+):
+    """Provide MetricsAggregator."""
+    from worker.ops.metrics import MetricsAggregator
+
+    return MetricsAggregator(
+        application_repo=app_repo,
+        event_repo=event_repo,
+        health_mgr=health_mgr,
+    )
+
+
+def get_telegram_service(
+    approval_manager=Depends(get_approval_manager),
+    kill_switch=Depends(get_kill_switch),
+    health_mgr=Depends(get_provider_health_manager),
+    app_settings: Settings = Depends(get_settings),
+):
+    """Provide TelegramNotificationService configured with settings."""
+    from worker.ops.telegram import TelegramNotificationService
+
+    token = getattr(app_settings, "telegram_bot_token", None)
+    chat_ids = getattr(app_settings, "telegram_allowed_chat_ids", None)
+    return TelegramNotificationService(
+        bot_token=token,
+        allowed_chat_ids=chat_ids,
+        approval_manager=approval_manager,
+        kill_switch=kill_switch,
+        provider_health_mgr=health_mgr,
+    )
+
+
+def get_readiness_evaluator():
+    """Provide RealSubmitReadinessEvaluator."""
+    from worker.ops.readiness import RealSubmitReadinessEvaluator
+
+    return RealSubmitReadinessEvaluator()
+
