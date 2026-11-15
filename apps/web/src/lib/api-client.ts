@@ -98,6 +98,20 @@ export class JobAgentAPIClient {
     return this.request<ApplicationItem[]>("/api/v1/dashboard/approvals");
   }
 
+  public async approveApplication(id: string, notes?: string): Promise<{ status: string }> {
+    return this.request<{ status: string }>(`/api/v1/applications/${id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  public async rejectApplication(id: string, reason?: string): Promise<{ status: string }> {
+    return this.request<{ status: string }>(`/api/v1/applications/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "User rejected" }),
+    });
+  }
+
   public async getApplicationDetail(id: string): Promise<ApplicationItem> {
     return this.request<ApplicationItem>(`/api/v1/dashboard/applications/${id}`);
   }

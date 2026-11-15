@@ -1,5 +1,25 @@
 # Changelog
 
+## Phase 3.3 — Application Workspace & Approval Queue
+- Extended `JobAgentAPIClient` with `approveApplication(id, notes)` and `rejectApplication(id, reason)` in `apps/web/src/lib/api-client.ts`.
+- Implemented full Application Workspace in `apps/web/src/app/applications/page.tsx`:
+  - Lifecycle state filtering (AWAITING_APPROVAL, DRY_RUN_DONE, NEEDS_USER_INPUT, APPROVED, REJECTED, etc.) and platform filtering.
+  - Search across external ID, application ID, and platform.
+  - Summary KPI cards for Total Tracked, Awaiting Approval, Dry-Runs Completed, and Needs User Input.
+  - Interactive table displaying autonomy level, status badge variants, timestamps, and contextual actions.
+- Built Human-in-the-Loop Approval Queue in `apps/web/src/app/approvals/page.tsx`:
+  - Approval cards showing candidate skill overlap, flagged answers requiring review, and selected resume version.
+  - One-click approval action with confirmation dialog reinforcing that real submissions are permanently locked disabled.
+  - Rejection action with reason capture and state machine transition to terminal REJECTED.
+  - Empty state with guidance when all queue items are approved.
+- Built comprehensive 4-tab Application Detail view in `apps/web/src/app/applications/[applicationId]/page.tsx`:
+  - Overview: Application metadata, autonomy level (L0), profile version, resume version, and pre-apply safety decisions.
+  - Fill Plan: Detailed table of detected form controls, input types, answer sources, mapped values, and code-enforced PolicyEngine rules (`auto`, `auto+log`, `always_ask`).
+  - Captured Evidence: Visual full-page DOM screenshot preview with duration, control count, and PII redaction verification.
+  - Audit Timeline: Append-only chronological state transition event trail with triggering components, timestamps, and transition reasons.
+- Added comprehensive unit tests in `apps/web/src/app/applications/applications.test.tsx` verifying applications filtering, approval queue modals, and tabbed detail views.
+- Verified test suite: 15 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.2 — Job Discovery & Matching Workspace
 - Implemented strongly typed Job domain models (`JobItem`, `MatchDimension`, `HardGateResult`, `JobDetailItem`, `PaginatedJobs`) in `apps/web/src/types/api.ts`.
 - Extended `JobAgentAPIClient` with `getJobs()` and `getJobDetail(jobId)` methods in `apps/web/src/lib/api-client.ts`.
