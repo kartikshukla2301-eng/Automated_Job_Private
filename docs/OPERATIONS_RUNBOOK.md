@@ -97,3 +97,28 @@ Platforms requiring authenticated browser sessions (LinkedIn, Naukri, Wellfound)
    ```powershell
    .\.venv\Scripts\pytest tests/test_security_audit.py -k test_session_managers_reject_passwords_and_secrets
    ```
+
+---
+
+## 5. Backup & Archive Management (Phase 2.6)
+
+Run periodic exports of Answer Bank entries, profile snapshots, and application states:
+
+```powershell
+# Generate cryptographic backup archive with SHA-256 checksum
+.\.venv\Scripts\python -c "from worker.ops.backup import BackupManager; BackupManager.create_backup(output_path='backups/backup_latest.json')"
+
+# Verify backup integrity
+.\.venv\Scripts\python -c "from worker.ops.backup import BackupManager; assert BackupManager.verify_backup_integrity('backups/backup_latest.json'); print('Backup verified successfully!')"
+```
+
+---
+
+## 6. Telegram Outbox & Notification Flush
+
+If network interruptions delay alert dispatches, failed notifications accumulate in the `NotificationOutbox`:
+
+```powershell
+# Retry undelivered notifications
+.\.venv\Scripts\python -c "import asyncio; from worker.ops.telegram import TelegramNotificationService; svc = TelegramNotificationService(); print('Flushed:', asyncio.run(svc.flush_outbox()))"
+```

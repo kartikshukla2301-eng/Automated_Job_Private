@@ -96,7 +96,7 @@ cd ../..
 
 ### 4. Running Tests
 ```powershell
-# Run complete backend test suite (401+ tests)
+# Run complete backend test suite (440 tests)
 .\.venv\Scripts\pytest -v
 
 # Run frontend test suite
@@ -127,3 +127,5 @@ Visit the dashboard at `http://localhost:3000` and API docs at `http://localhost
 - **Operator Runbook**: [docs/OPERATIONS_RUNBOOK.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/OPERATIONS_RUNBOOK.md)
 - **Disaster Recovery Runbook**: [docs/RECOVERY_RUNBOOK.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/RECOVERY_RUNBOOK.md)
 - **Release Readiness Evaluation**: [docs/RELEASE_READINESS.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/RELEASE_READINESS.md)
+- **Capacity & Performance Report**: [docs/CAPACITY_REPORT.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/CAPACITY_REPORT.md)
+- **Final Release Governance Report**: [docs/FINAL_RELEASE_REPORT.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/FINAL_RELEASE_REPORT.md)

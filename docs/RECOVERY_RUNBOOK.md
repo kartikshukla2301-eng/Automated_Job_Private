@@ -91,3 +91,24 @@ The scheduled job automatically marks stale applications as `EXPIRED`. To force 
 curl -X POST http://127.0.0.1:8000/api/v1/ops/approvals/expire-stale
 ```
 Expired applications emit an audit event and are cleared from active triage queues.
+
+---
+
+## 6. Disaster Recovery & Archive Restore (Phase 2.6)
+
+In the event of database corruption, system reinstallation, or hardware migration:
+
+### Procedure:
+1. Locate the latest verified backup archive (e.g., `backups/backup_latest.json`).
+2. Run cryptographic integrity verification:
+   ```powershell
+   .\.venv\Scripts\python -c "from worker.ops.backup import BackupManager; assert BackupManager.verify_backup_integrity('backups/backup_latest.json'); print('Integrity verified!')"
+   ```
+3. Execute restore:
+   ```powershell
+   .\.venv\Scripts\python -c "from worker.ops.backup import BackupManager; res = BackupManager.restore_backup('backups/backup_latest.json'); print('Restored items:', res.restored_counts)"
+   ```
+4. Verify system health probes:
+   ```powershell
+   curl http://127.0.0.1:8000/health/ready
+   ```

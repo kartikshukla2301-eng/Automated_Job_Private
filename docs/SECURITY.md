@@ -109,3 +109,16 @@ Untrusted text extracted from external job listings is sanitized before feeding 
 - Loggers strip email addresses, phone numbers, and candidate names using regex sanitizers before writing to console or file.
 - Event payloads in `ApplicationEvent` record field keys resolved (`{"first_name": "<RESOLVED_FIELD>"}`), never storing raw sensitive values in plain text.
 - Database schemas enforce Row Level Security (RLS) ensuring `user_id = auth.uid()` on all candidate applications and profile snapshots.
+
+---
+
+## 8. Role-Based Access Control & Tenant Isolation (Phase 2.3)
+
+- **Principal Identities**: Requests are bound to `AuthenticatedSubject` with typed roles:
+  - `OWNER`: Full administrative, execution, and approval authority.
+  - `OPERATOR`: Supervised execution, canary inspection, and approval triage.
+  - `WORKER`: Internal autonomous runner identity with strictly scoped data access.
+  - `ADMIN`: Infrastructure and operational control.
+- **Application Ownership Verification**: `verify_application_ownership()` validates that the calling subject owns the application before returning details or accepting approval actions, returning `403 Forbidden` on cross-tenant access attempts.
+- **Rate Limiting**: `SlidingWindowRateLimiter` enforces windowed burst protection (e.g. 60 req/min for general API, 10 req/min for approval actions) with standard HTTP headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`).
+- **Database Error Sanitization**: PostgREST errors are translated into typed exceptions (`DatabaseConnectionError`, `DuplicateRecordError`), ensuring database connection strings, service role keys, and internal query structures are never exposed in responses or logs.

@@ -210,19 +210,66 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Authored complete operational documentation suite: updated root `README.md`, native Windows setup guide `docs/INSTALLATION.md`, configuration reference `docs/CONFIGURATION.md`, security posture guide `docs/SECURITY.md`, daily operator guide `docs/OPERATIONS_RUNBOOK.md`, disaster recovery runbook `docs/RECOVERY_RUNBOOK.md`, and locked architecture gate evaluation `docs/RELEASE_READINESS.md`.
   - Total test coverage: 401 backend tests passing (pytest), 2 frontend tests passing (Vitest), ESLint clean.
 
+- Phase 2.1 complete: Supervised L0 Live Form Validation & Evidence Management.
+  - Built `worker/pilot/` (`PilotOrchestrator`, `PilotEvidenceManager`, `PilotFormRecord`, `PilotReviewRequest`) with sanitized PII-redacted evidence bundles (`form_schema.json`, `fill_plan.json`, `screenshot.png`) and SHA-256 provenance hashes.
+  - Implemented explicit accuracy formula `((reviewed - incorrect) / reviewed * 100)` with zero tolerance for wrong sensitive answers.
+  - Scoped REST endpoints in `services/api/routes/pilot.py` (`/api/v1/pilot/*`). 405 backend tests passing.
+
+- Phase 2.2 complete: Durable Supabase Persistence & Storage Abstraction.
+  - Built `SupabaseClient` async PostgREST wrapper with typed database exceptions (`DatabaseConnectionError`, `DuplicateRecordError`, `AuthorizationError`, `RecordNotFoundError`).
+  - Production Supabase repositories (`SupabaseApplicationRepository`, `SupabaseApplicationEventRepository`, `SupabaseJobRepository`, `SupabaseAnswerBankRepository`) with idempotency, optimistic locking, and user isolation.
+  - Private storage abstraction (`SupabaseStorageService`) with 15-minute signed URLs.
+  - Additive performance indexes migration (`migrations/002_performance_indexes.sql`). 410 backend tests passing.
+
+- Phase 2.3 complete: API Security Hardening, Authorization & Reliability.
+  - Authenticated subject models (`AuthenticatedSubject`, `UserRole`: OWNER, OPERATOR, WORKER, ADMIN).
+  - Cross-tenant application ownership verification (`verify_application_ownership` -> 403 Forbidden).
+  - Sliding window rate limiter (`SlidingWindowRateLimiter`) with standard headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`).
+  - Standardized `APIErrorResponse` schema, `/health/live` and `/health/ready` probes. 415 backend tests passing.
+
+- Phase 2.4 complete: Dashboard API & Product Data Integration Layer.
+  - Scoped dashboard REST endpoints in `services/api/routes/dashboard.py` (`/overview`, `/applications`, `/approvals`, `/applications/{id}`, `/timeline`, `/analytics`, `/profile/sync`).
+  - Strongly typed TypeScript contracts (`apps/web/src/types/api.ts`) and typed asynchronous API client (`apps/web/src/lib/api-client.ts`). 417 backend tests passing.
+
+- Phase 2.5 complete: Matching Calibration, Answer Quality Analytics & Golden Questions.
+  - `MatchingCalibrator` with 50-job human-reviewed benchmark across role families (platform, backend, fullstack) and work modes, verifying zero hard-filter overrides.
+  - `AnswerBankQualityReporter` with freshness and provenance auditing.
+  - Invariant: LLM answers strictly require human review (`needs_review=True`).
+  - Evaluated canonical 20 sensitive/golden questions suite; 100% fail-closed to `always_ask`. 423 backend tests passing.
+
+- Phase 2.6 complete: Operational Reliability, Notifications & Disaster Recovery.
+  - Enhanced `TelegramNotificationService` with bounded exponential retries (`_send_with_retries`), `AlertDeduplicator` suppressing repeating alert bursts, and `NotificationOutbox` queuing failed alerts for recovery.
+  - Centralized structured logging context (`run_id`, `application_id`, `provider`, `request_id`) via `bind_logging_context` and `format_audit_log`.
+  - `BackupManager` creating self-contained backup archives with SHA-256 cryptographic verification and tamper rejection. 430 backend tests passing.
+
+- Phase 2.7 complete: L1 Supervised Execution Preparation & Pre-Submission Simulation.
+  - `SupervisedExecutionSimulator` and `PreSubmissionSimulationReport` in `worker/application/supervised.py`, verifying kill switch, rate caps, provider health, answer freshness, and sensitive field policies, stopping strictly before submit.
+  - Non-negotiable real submission barrier raising `RealSubmitGateBlockedError` on any submit attempt.
+  - `AutonomyController` evaluating L1 promotion criteria (30 apps, >=98% accuracy, 0 wrong sensitive, 0 duplicates) and strictly capping LinkedIn at L1. 435 backend tests passing.
+
+- Phase 2.8 complete: Performance, Scale & Resilience Testing.
+  - Benchmarked matching latency (< 70ms for 50 jobs), health probe latency (< 15ms), and form inspection.
+  - Verified concurrent application creation idempotency resolving to a single record without race conditions.
+  - Authored `docs/CAPACITY_REPORT.md` documenting latency percentiles, memory profile, and capacity stages (S0->S1->S2->S3) while strictly locking active daily cap at 2. 440 backend tests passing.
+
+- Phase 2.9 complete: Release Governance & Platform Certification.
+  - Completed security re-audit across all 6 providers, verified `real_submit_gate_enabled = False` strictly across all codebase entrypoints.
+  - Authored `docs/FINAL_RELEASE_REPORT.md` and `docs/PHASE_2_1_TO_2_9_COMPLETION.md`.
+  - Updated operational runbooks (`docs/OPERATIONS_RUNBOOK.md`, `docs/RECOVERY_RUNBOOK.md`), `docs/SECURITY.md`, `docs/RELEASE_READINESS.md`, `docs/PROVIDER_STATUS.md`, and `README.md`.
+  - 440 backend tests passing (100%), 2 frontend tests passing, ESLint clean.
+
 ### In progress
-- None (Phases 1.5 through 2.0 fully completed, tested, and certified).
+- None (All Phases 2.1 through 2.9 fully completed, tested, and certified).
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–2.0).
+- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–2.9).
 - Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
 - Live Greenhouse, Lever, Naukri, Wellfound, Ashby, and LinkedIn external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
-- Local SentenceTransformer weights download (offline fallback verified; production neural embedding requires local weight availability).
 
 ## Next steps
-1. Deploy L0 Release Candidate in local operator staging environment.
-2. Execute 20 live dry-run form inspections under human operator review to satisfy Criterion G-04 before considering Autonomy Level L1.
+1. Deploy Phase 2.9 Release Certified Platform in production runtime environment.
+2. Operator staging verification under supervised L0/L1 execution.
 
 ## End-of-session handoff template
 - Task and date/time

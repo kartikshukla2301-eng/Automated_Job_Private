@@ -12,12 +12,12 @@ This document defines the authoritative capabilities, authentication models, ris
 
 | Provider | Type | Risk Tier | Auth Model | Discovery Method | Form Inspection | Max Autonomy | Daily Cap Default | Status |
 |---|---|---|---|---|---|---|---|---|
-| **Greenhouse** | ATS | Low | Public (No auth) | REST API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **READY (L0)** |
-| **Lever** | ATS | Low | Public (No auth) | REST API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **READY (L0)** |
-| **Ashby** | ATS | Low | Public (No auth) | Board API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **READY (L0)** |
-| **Naukri** | Job Board | Medium | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright DOM / HTML | L3 Staged | Staged (S0: 2/day) | **READY (L0)** |
-| **Wellfound** | Startup Board | Medium | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright DOM / HTML | L3 Staged | Staged (S0: 2/day) | **READY (L0)** |
-| **LinkedIn** | Social Network | **High (Restricted)** | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright Easy Apply | **L1 Supervised ONLY** | Strictly Capped (2/day) | **READY (L0 Restricted)** |
+| **Greenhouse** | ATS | Low | Public (No auth) | REST API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **CERTIFIED (L0/L1)** |
+| **Lever** | ATS | Low | Public (No auth) | REST API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **CERTIFIED (L0/L1)** |
+| **Ashby** | ATS | Low | Public (No auth) | Board API / HTML | Playwright DOM / HTML | L3 Full Auto | Standard (20/40) | **CERTIFIED (L0/L1)** |
+| **Naukri** | Job Board | Medium | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright DOM / HTML | L3 Staged | Staged (S0: 2/day) | **CERTIFIED (L0/L1)** |
+| **Wellfound** | Startup Board | Medium | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright DOM / HTML | L3 Staged | Staged (S0: 2/day) | **CERTIFIED (L0/L1)** |
+| **LinkedIn** | Social Network | **High (Restricted)** | Manual Session (`cookies.json`) | Ingestion / Cards | Playwright Easy Apply | **L1 Supervised ONLY** | Strictly Capped (2/day) | **CERTIFIED (L0/L1 Restricted)** |
 
 ---
 

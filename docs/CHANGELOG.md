@@ -1,5 +1,13 @@
 # Changelog
 
+## Phase 2.9 — Release Governance & Certification
+- Completed comprehensive security and compliance re-audit across all 6 provider adapters, verifying fail-closed real submit barriers (`real_submit_gate_enabled = False`).
+- Verified zero credential persistence in session managers, strict SSRF/host allowlisting in `NavigationGuard`, and automatic PII redaction across all ledgers.
+- Authored `docs/FINAL_RELEASE_REPORT.md` certifying release readiness across all 8 locked architecture gates.
+- Authored `docs/PHASE_2_1_TO_2_9_COMPLETION.md` establishing end-to-end milestone traceability from Phase 2.1 through Phase 2.9.
+- Updated operational documentation suite: `docs/RELEASE_READINESS.md`, `docs/PROVIDER_STATUS.md`, `docs/OPERATIONS_RUNBOOK.md`, `docs/RECOVERY_RUNBOOK.md`, `docs/SECURITY.md`, `README.md`, and `PROJECT_CONTEXT.md`.
+- Final release test verification: 440 backend tests passed (100%), 2 frontend tests passed (Vitest), ESLint clean.
+
 ## Phase 2.8 — Performance, Reliability & Scale Validation
 - Implemented performance, concurrency, and failure injection suite in `tests/test_scale_and_resilience.py`.
 - Benchmarked matching engine (< 70ms for 50 jobs) and health probe latency (< 15ms).
