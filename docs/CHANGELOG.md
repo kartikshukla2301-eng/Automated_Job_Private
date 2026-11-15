@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 3.7 — Analytics & Outcome Dashboard
+- Enhanced `apps/web/src/app/analytics/page.tsx` with live API-driven telemetry and historical analytics:
+  - Connected directly to `apiClient.getAnalytics()` (`GET /api/v1/dashboard/analytics`) with skeleton loading and offline fallback resilience.
+  - Interactive time range toggle (7 Days, 30 Days, All Time) and manual refresh trigger.
+  - 8-stage Lifecycle Funnel visualization (Discovered, Matched, Eligible, Ready, Awaiting Approval, Approved & Filling, Dry Run Done, Applied Live = 0 with locked badge).
+  - Matching Calibration and Benchmark Accuracy breakdown grounded in Phase 2.5 ground truth (96.2% precision, 94.1% recall, 3.8% FPR, 0.0% hard gate violations) across Platform, Backend, and Full-Stack role families.
+  - Answer Bank Resolution Quality metrics (84.6% exact match, 11.4% normalized alias, 4.0% LLM suggestions with mandatory human review, 20/20 golden questions 100% fail-closed, 0 unauthorized auto-promotions).
+  - Post-Submission Outcome Tracking with clear L0 Supervised Operational Mode standby notice and milestone counters (Dry Runs Done, Screenings, Interviews, Offers).
+- Added comprehensive unit tests in `apps/web/src/app/analytics/analytics.test.tsx` verifying KPI cards, live funnel data rendering, time range toggling, role family metrics, answer quality checks, and offline error fallback.
+- Verified test suite: 29 frontend tests passed (100%), ESLint clean (0 errors, 0 warnings), Next.js production build succeeded across all 17 routes.
+
 ## Phase 3.6 — Automation & Safety Control Center
 - Added `trip_kill_switch_endpoint` (`POST /api/v1/dashboard/kill-switch/trip`) and `reset_kill_switch_endpoint` (`POST /api/v1/dashboard/kill-switch/reset`) in `services/api/routes/dashboard.py`.
 - Added `KillSwitchStatus` interface in `apps/web/src/types/api.ts` and extended `JobAgentAPIClient` with `tripKillSwitch(reason)` and `resetKillSwitch()` in `apps/web/src/lib/api-client.ts`.
