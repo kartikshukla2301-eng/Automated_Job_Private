@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase 2.5 — Matching Calibration, Answer Quality Analytics & Golden Questions
+- Implemented strongly typed `CalibrationSample` and `CalibrationReport` models with precision, recall, false positive rate (FPR), false negative rate (FNR), F1 score, score percentiles, and segment breakdowns (`worker/matching/calibration.py`).
+- Added canonical 50-job human-reviewed calibration benchmark spanning platform, backend, and fullstack roles across remote, hybrid, and onsite work modes.
+- Implemented `MatchingCalibrator` with deterministic threshold scoring, borderline band analysis, and hard-filter override safety verification (strictly 0 overrides allowed).
+- Implemented `QualityMetricsReport`, `GoldenQuestionResult`, and `GoldenQuestionSuiteReport` in `worker/answers/quality.py`.
+- Built `AnswerBankQualityReporter` calculating exact matches, alias matches, semantic matches, LLM suggestions, user answers, expired answers, and needs-review answers with zero tolerance for unapproved LLM auto-promotion.
+- Defined and evaluated canonical suite of 20 sensitive/golden questions covering compensation expectations, visa sponsorship, legal consents, EEO demographics, criminal disclosure, IP assignment, and conflicting profile facts; verified 100% fail-closed compliance to `always_ask`.
+- Added unit tests in `tests/test_matching_calibration.py` and `tests/test_golden_questions.py`; 423 backend tests passing, 2 frontend tests passing, ESLint clean.
+
 ## Unreleased — Bootstrap
 - Prepared initial project documentation scaffold.
 - Recorded no-Docker initial setup decision.
