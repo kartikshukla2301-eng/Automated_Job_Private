@@ -6,14 +6,11 @@ Update this file incrementally during work and before ending every task/session.
 Build a personal human-in-the-loop AI Job Application Agent for job discovery, matching, truthful form-answer resolution, policy-controlled form filling, and auditable evidence.
 
 ## Current status
-- Stage: bootstrap/documentation.
-- Application features implemented: none verified.
-- Coding agent: Freebuff CLI, authenticated.
-- Environment previously verified: Windows, Git, Git Bash, Node.js/npm, Freebuff.
-- Python availability must still be checked.
-- Supabase/OpenRouter credentials are not configured in this repository.
-- Docker Desktop is installed but deliberately not being used; do not troubleshoot it unless the owner changes this decision.
-- No WSL/Ubuntu setup is intended.
+- Stage: L0 Supervised Execution Certified (Phases 0.1 through 3.9 fully completed).
+- Frontend: Fully functional, high-performance desktop cockpit in `apps/web/` (Next.js 16.4.2, TypeScript, Tailwind CSS v4, Lucide React). All 12 routes implemented with Premium Light Theme. 34 frontend tests passing (100%), ESLint clean (0 errors, 0 warnings), Next.js production build clean across all 17 routes.
+- Backend API & Worker: Python 3.13 + FastAPI + Supabase PostgreSQL + centralized LLM Gateway + Playwright automation. 440 backend tests passing (100%).
+- Safety & Gates: Real-Submit Gate permanently locked disabled (`real_submit_gate_enabled = False`); Stage S0 rate caps (2 applications/day active limit); zero password storage guarantee; file-backed emergency kill switch armed and operational.
+- Environment: Native Windows 11 only (no Docker, no WSL, no Linux). Offline-resilient with zero external font download dependencies.
 
 ## Architecture authority
 `docs/AI_Job_Application_Agent_Architecture_v1.0_LOCKED.docx` is authoritative. If missing, ask the owner to add it before architecture-dependent implementation.

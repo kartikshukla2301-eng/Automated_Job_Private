@@ -121,6 +121,10 @@ Visit the dashboard at `http://localhost:3000` and API docs at `http://localhost
 
 ## 6. Operational Documentation
 
+- **Frontend Architecture & UX Guide**: [docs/FRONTEND_GUIDE.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/FRONTEND_GUIDE.md)
+- **Local Development Guide (Windows 11)**: [docs/LOCAL_DEVELOPMENT.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/LOCAL_DEVELOPMENT.md)
+- **Production Deployment Guide**: [docs/DEPLOYMENT_GUIDE.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/DEPLOYMENT_GUIDE.md)
+- **Phase 3.0 to 3.9 Milestone Traceability**: [docs/PHASE_3_0_TO_3_9_COMPLETION.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/PHASE_3_0_TO_3_9_COMPLETION.md)
 - **Installation Guide**: [docs/INSTALLATION.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/INSTALLATION.md)
 - **Configuration Reference**: [docs/CONFIGURATION.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/CONFIGURATION.md)
 - **Security Architecture**: [docs/SECURITY.md](file:///c:/Users/Kartik%20Shukla/OneDrive/Desktop/JOB_AGENT/docs/SECURITY.md)
