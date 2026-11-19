@@ -5,9 +5,25 @@ Update this file incrementally during work and before ending every task/session.
 ## Goal
 Build a personal human-in-the-loop AI Job Application Agent for job discovery, matching, truthful form-answer resolution, policy-controlled form filling, and auditable evidence.
 
+## ⚠️ Test suite removed (owner instruction, 2026-11-19)
+At the owner's explicit request, **all automated test files were deleted** from this
+repository: every `tests/test_*.py` file (previously 474 backend tests) and every
+`*.test.ts`/`*.test.tsx` file under `apps/web/src` (previously 39 frontend tests).
+The owner was told beforehand that this removes the project's only mechanism for
+catching regressions automatically and confirmed explicitly (twice) that this is
+intended. Nothing else was changed to compensate for this: no replacement testing
+strategy was requested or set up.
+Practical consequence for anyone continuing this project: claims of "verified" or
+"N backend tests passing" in the work log below are **historical** — true as of when
+they were written, but there is no automated suite left to re-confirm them today.
+`npm run build` / `npx eslint .` (frontend) and importing `services.api.main.create_app()`
+(backend) still succeed with zero test files present, so the application itself is not
+broken by this removal — only the regression-detection safety net is gone.
+
 ## Current status
-- Stage: L0 Supervised Execution Certified (Phases 0.1 through 3.9 fully completed).
-- Frontend: Fully functional, high-performance desktop cockpit in `apps/web/` (Next.js 16.4.2, TypeScript, Tailwind CSS v4, Lucide React). All 12 routes implemented with Premium Light Theme. 34 frontend tests passing (100%), ESLint clean (0 errors, 0 warnings), Next.js production build clean across all 17 routes.
+- Stage: L0 Supervised Execution Certified (Phases 0.1 through 3.9 fully completed), plus Phase 4.0-4.3 (OI-1, OI-2, OI-7, OI-8 Optional Improvements).
+- Frontend: Fully functional, high-performance desktop cockpit in `apps/web/` (Next.js 16.4.2, TypeScript, Tailwind CSS v4, Lucide React). All 12 routes implemented with Premium Light Theme. 39 frontend tests passing (100%, independently re-run this session), ESLint clean (0 errors, 0 warnings), Next.js production build clean across all 17 routes.
+- Backend: 465 backend tests passing (100%, independently re-run this session on a freshly fixed Python 3.13.16 environment — see Phase 4.0 below).
 - Backend API & Worker: Python 3.13 + FastAPI + Supabase PostgreSQL + centralized LLM Gateway + Playwright automation. 440 backend tests passing (100%).
 - Safety & Gates: Real-Submit Gate permanently locked disabled (`real_submit_gate_enabled = False`); Stage S0 rate caps (2 applications/day active limit); zero password storage guarantee; file-backed emergency kill switch armed and operational.
 - Environment: Native Windows 11 only (no Docker, no WSL, no Linux). Offline-resilient with zero external font download dependencies.
@@ -255,18 +271,37 @@ All runtime LLM calls go through the central LLM Gateway. Track model, task/purp
   - Updated operational runbooks (`docs/OPERATIONS_RUNBOOK.md`, `docs/RECOVERY_RUNBOOK.md`), `docs/SECURITY.md`, `docs/RELEASE_READINESS.md`, `docs/PROVIDER_STATUS.md`, and `README.md`.
   - 440 backend tests passing (100%), 2 frontend tests passing, ESLint clean.
 
+- Phase 4.0 complete: One-Tap Batch Approval for the Approval Queue (locked architecture Optional Improvement OI-1).
+  - Added per-application checkboxes, a "Select all" control, and an "Approve Selected (N)" action to `apps/web/src/app/approvals/page.tsx`.
+  - Batch confirmation routes every selected application through the existing `apiClient.approveApplication(id, notes)` call (the same per-application `/api/v1/applications/{id}/approve` endpoint, ownership checks, and safety barrier as a single approval); no new backend endpoint was added and no safety/policy surface was touched.
+  - The pre-existing single approve/reject flow, its exact button labels, dialog copy, and `apiClient` call signature are unchanged and still covered by the existing tests.
+  - Added `apps/web/src/app/approvals/approvals.test.tsx` (5 new tests: checkbox rendering, selection count, select-all toggle, batch confirmation calling `approveApplication` once per selected id, and non-regression of the single-item approve/reject flow).
+  - Verified: `npx vitest run` 39/39 frontend tests passing (was 34; +5), `npx eslint .` clean (0 errors/warnings), `npx next build` clean across all 17 routes.
+  - Backend test suite was **not** re-run in that part of the session: this machine only had a Python 3.15.2 pre-release install with a broken venv `pip` and no MSVC Build Tools, so `pyyaml`'s compiled extension failed to build.
+- Environment fix: installed Python 3.13.16 (official Windows installer, per-user, into `%LOCALAPPDATA%\Programs\Python313`, not on PATH) since the machine's only other Python was the broken 3.15 pre-release. Recreated `.venv` against 3.13.16, installed `requirements.txt`, and installed Playwright Chromium (`.venv\Scripts\python.exe -m playwright install chromium`). `pytest -q` now runs: **440 passed**, confirming the previously-reported count on this machine.
+- Added `tracker.md` (project root) as a lightweight, continuously-updated backlog of remaining locked-architecture Optional Improvements (OI-2, OI-3, OI-7, OI-8) and open evidence gaps, scoped so nothing in it touches the real-submit gate, provider order, schema, or autonomy ceilings. `docs/TASK_TRACKER.md` remains the authoritative task record; `tracker.md` mirrors just the active Phase 4 backlog for quick monitoring.
+- Phase 4.1 complete: Weekly automatic Answer Bank + profile snapshot backup (OI-8) — `worker/ops/backup_schedule.py` (`WeeklyBackupScheduler`), 7 new tests, 447/447 backend tests passing.
+- Phase 4.2 complete: Form snapshot persistence + offline fixture replay (OI-2) — `worker/browser/form_snapshot.py` (`FormSnapshot`, `FileFormSnapshotRepository`, `detect_drift`), 7 new tests, 454/454 backend tests passing.
+- Phase 4.3 complete: Local small-model (Ollama) last-resort LLM fallback (OI-7) — `worker/core/local_llm_fallback.py` (`LocalOllamaClient`, `execute_with_local_fallback`), deliberately additive with zero edits to the locked `worker/core/llm_gateway.py`, 11 new tests, 465/465 backend tests passing.
+- Audited the remaining locked-architecture Optional Improvements against actual code: OI-4 (resume tailoring diff, `worker/profile/resume_intelligence.py`), OI-5 (LinkedIn L1 cap), and OI-6 (50-job matching calibration) were already implemented in earlier phases — verified present, nothing re-done. OI-3 (email outcome tracking) and the master handbook's live-infrastructure evidence gaps (live Supabase, live DevLeveler, live Telegram, 20 real reviewed forms, production deployment) are explicitly out of reach for an agent working alone — see `tracker.md` P4-05/P4-06.
+
+- Phase 4.4 complete: Live Supabase provisioning + Nemotron/OpenRouter model routing (see `tracker.md` P4-07, P4-08). Live migration applied, Supabase repo wiring added (backward-compatible, 465/465 tests still pass), `config.yaml` LLM chain defaulted to free Nemotron-via-OpenRouter. Discovered and documented a pre-existing limitation: `LLMGateway._resolve_model()` never automatically iterates past `chains[task][0]`, so listing a fallback model in the chain today only documents intent — it is not yet automatically used.
+- Started both services locally for the owner: FastAPI at `http://127.0.0.1:8000` (`uvicorn services.api.main:app --reload`) and Next.js at `http://localhost:3000` (`npm run dev`, with `CI=true` to skip an interactive Next.js 16 update-available prompt that otherwise blocks the dev server).
+
 ### In progress
-- None (All Phases 2.1 through 2.9 fully completed, tested, and certified).
+- Waiting on the owner to paste two real secrets directly into `.env` (not in chat): `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY` (Supabase dashboard → Project Settings → API) and `OPENROUTER_API_KEY` (https://openrouter.ai/keys). Once present, Supabase persistence and the Nemotron/OpenRouter LLM path go live without further code changes.
+- Otherwise: all code-buildable items from the locked architecture's Optional Improvements list (OI-1, OI-2, OI-7, OI-8) are complete and verified; OI-4/OI-5/OI-6 were already done in earlier phases. Remaining backlog items (`tracker.md` P4-05 email outcome tracking, live DevLeveler/Telegram/20-reviewed-forms/production-deployment) are BLOCKED pending the owner's real credentials/accounts/manual review — not something an agent can complete alone.
 
 ### Unverified / pending
-- Live Supabase project deployment and credentials (verified via static text and constraint parsing offline; no live Supabase connection initiated in Phases 0.7–2.9).
-- Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests).
+- ~~Live Supabase project deployment~~ — DONE 2026-11-17: `migrations/001_initial_schema.sql` + `002_performance_indexes.sql` applied to the owner's real Supabase Postgres instance; all 13 tables + RLS policies confirmed present. `services/api/dependencies.py` now switches `get_application_repository`/`get_application_event_repository` to Supabase-backed repos when `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set in `.env`; still falls back to in-memory otherwise. **The owner still needs to paste the real `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY` into `.env`** (Supabase dashboard → Project Settings → API) for the running app to actually use it — not yet done.
+- Live OpenRouter network completion (verified via mocked HTTP transport and deterministic unit tests offline; no live OpenRouter calls initiated during tests). `config/config.yaml` now defaults the LLM chain to free NVIDIA Nemotron models via OpenRouter; **the owner still needs to paste a real `OPENROUTER_API_KEY` into `.env`** (from https://openrouter.ai/keys) before any live call can succeed.
 - Live Telegram bot network delivery (verified via mock adapter offline; no live Telegram calls initiated during tests).
 - Live Greenhouse, Lever, Naukri, Wellfound, Ashby, and LinkedIn external HTTP requests (verified via mocked HTTP transport and local HTML/JSON fixtures offline; no live external network requests initiated during tests).
 
 ## Next steps
 1. Deploy Phase 2.9 Release Certified Platform in production runtime environment.
 2. Operator staging verification under supervised L0/L1 execution.
+3. Owner action required to unblock `tracker.md` P4-05 (email outcome tracking — needs real mailbox credentials/consent) and P4-06 (live Supabase migration, live DevLeveler endpoint, live Telegram bot, 20 real human-reviewed forms, production deployment).
 
 ## End-of-session handoff template
 - Task and date/time

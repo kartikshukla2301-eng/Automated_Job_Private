@@ -92,6 +92,17 @@ class LLMConfig(BaseModel):
                 "input_per_million": 0.20,
                 "output_per_million": 0.20,
             },
+            # Genuinely free OpenRouter-hosted models: true $0 rate, not a fabricated
+            # estimate. Verify current free-tier availability at openrouter.ai before relying
+            # on these long-term — free model IDs and limits change over time.
+            "nvidia/nemotron-3.5-lightning:free": {
+                "input_per_million": 0.0,
+                "output_per_million": 0.0,
+            },
+            "nvidia/nemotron-3-super-120b-a12b:free": {
+                "input_per_million": 0.0,
+                "output_per_million": 0.0,
+            },
         },
         description="Configured pricing fallback per 1M tokens: {'input_per_million': float, 'output_per_million': float}",
     )
@@ -148,6 +159,31 @@ class Settings(BaseSettings):
     real_submit_gate_enabled: bool = Field(
         default=False,
         description="Non-negotiable safety invariant: real form submissions are strictly disabled",
+    )
+
+    supabase_url: Optional[str] = Field(
+        default=None,
+        description="Supabase project REST base URL, e.g. https://<project-ref>.supabase.co "
+        "(PostgREST endpoint used by SupabaseClient; NOT the raw postgresql:// DB connection string)",
+    )
+    supabase_anon_key: Optional[str] = Field(
+        default=None, description="Supabase anon/public API key (user-scoped, RLS-enforced)"
+    )
+    supabase_service_role_key: Optional[str] = Field(
+        default=None,
+        description="Supabase service-role API key. Backend-only; never exposed to the frontend/worker "
+        "per docs/SECURITY.md. Required for SupabaseClient-backed repositories.",
+    )
+
+    devleveler_profile_url: Optional[str] = Field(
+        default=None,
+        description="Full DevLeveler job-agent-profile endpoint URL, "
+        "e.g. https://devleveler.vercel.app/api/v1/me/job-agent-profile",
+    )
+    devleveler_read_token: Optional[str] = Field(
+        default=None,
+        description="Scoped, read-only bearer token for the DevLeveler profile endpoint "
+        "(issued via DevLeveler's scripts/create-job-agent-token.ts, never a password).",
     )
 
     openrouter_api_key: Optional[str] = Field(

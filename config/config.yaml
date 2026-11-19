@@ -36,10 +36,20 @@ matching:
 
 llm:
   daily_call_budget: 400
+  # Model IDs are configuration-driven per docs/AI_Job_Application_Agent_Architecture_v1.0_LOCKED.docx
+  # Section 15: "check the current OpenRouter limits and model list when configuring" — the
+  # free-model lineup changes over time. Verify/update these at https://openrouter.ai/nvidia
+  # and https://openrouter.ai/collections/free-models before relying on them long-term.
+  #
+  # NOTE: `_resolve_model()` in worker/core/llm_gateway.py currently only ever dispatches to
+  # chains[task][0] — it does not yet automatically retry chains[task][1] on failure. Listing
+  # a second model here documents the intended fallback but does not (yet) make it automatic;
+  # true automatic chain fallback is a separate, not-yet-built enhancement.
   chains:
     unknown_question:
+      - "nvidia/nemotron-3.5-lightning:free"   # primary: free NVIDIA Nemotron via OpenRouter
+      - "nvidia/nemotron-3-super-120b-a12b:free"  # secondary free Nemotron variant
       - "model_a"
-      - "model_b"
 
 approval:
   expire_hours: 24
@@ -48,5 +58,9 @@ retention:
   screenshots_days: 60
 
 profile:
-  source: "local_file"
+  # Activated 2026-11-19 after the live DevLeveler endpoint was built, deployed, and its
+  # response verified (zero validation errors) against worker/profile/models.py.ProfileSnapshot.
+  # DevLevelerProfileSource falls back to local_file automatically on network/auth failure.
+  source: "devleveler"
+  local_file_path: "fixtures/profile.yaml"
   stale_after_days: 7

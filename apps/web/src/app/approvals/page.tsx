@@ -63,6 +63,9 @@ export default function ApprovalsPage() {
   const [selectedApp, setSelectedApp] = React.useState<ApprovalItem | null>(null)
   const [dialogAction, setDialogAction] = React.useState<"approve" | "reject" | null>(null)
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false)
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [isBatchDialogOpen, setIsBatchDialogOpen] = React.useState<boolean>(false)
+  const [isBatchSubmitting, setIsBatchSubmitting] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     let ignore = false
@@ -113,10 +116,61 @@ export default function ApprovalsPage() {
     } finally {
       // Remove approved/rejected item from queue
       setApprovals((prev) => prev.filter((item) => item.id !== selectedApp.id))
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(selectedApp.id)
+        return next
+      })
       setIsSubmitting(false)
       setDialogAction(null)
       setSelectedApp(null)
     }
+  }
+
+  // One-tap batch approval (locked architecture Optional Improvement OI-1).
+  // Reuses the same per-application approve endpoint and safety/ownership
+  // checks as a single approval; this view only fans the call out across the
+  // operator's selection. It never bypasses PolicyEngine, SafetyEngine or the
+  // real-submit gate.
+  const selectedCount = approvals.filter((item) => selectedIds.has(item.id)).length
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) =>
+      prev.size === approvals.length ? new Set() : new Set(approvals.map((item) => item.id))
+    )
+  }
+
+  const handleConfirmBatchApprove = async () => {
+    const ids = approvals.filter((item) => selectedIds.has(item.id)).map((item) => item.id)
+    if (ids.length === 0) {
+      setIsBatchDialogOpen(false)
+      return
+    }
+    setIsBatchSubmitting(true)
+
+    await Promise.allSettled(
+      ids.map((id) => apiClient.approveApplication(id, "Approved via UI Operator Console (Batch)"))
+    )
+
+    // Remove every approved item from the queue, matching the optimistic
+    // single-approval behaviour so the UI stays usable in offline/demo mode.
+    const idSet = new Set(ids)
+    setApprovals((prev) => prev.filter((item) => !idSet.has(item.id)))
+    setSelectedIds(new Set())
+    setIsBatchSubmitting(false)
+    setIsBatchDialogOpen(false)
   }
 
   return (
@@ -145,6 +199,36 @@ export default function ApprovalsPage() {
           <span className="font-semibold">L0 Approval Semantics:</span> Approving an application transitions its state machine to <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px]">READY</code> / <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px]">FILLING</code> for deterministic form inspection and screenshot capture. Real external submissions remain strictly locked disabled.
         </div>
       </div>
+
+      {/* Batch Selection Toolbar (OI-1: one-tap batch approval) */}
+      {!isLoading && approvals.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs">
+          <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+            <input
+              type="checkbox"
+              aria-label="Select all applications"
+              className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              checked={selectedCount > 0 && selectedCount === approvals.length}
+              onChange={toggleSelectAll}
+            />
+            <span>
+              {selectedCount > 0
+                ? `${selectedCount} selected`
+                : `Select all (${approvals.length})`}
+            </span>
+          </label>
+          <Button
+            variant="default"
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={() => setIsBatchDialogOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 disabled:opacity-50"
+          >
+            <CheckCircle2 className="size-3.5" />
+            <span>Approve Selected{selectedCount > 0 ? ` (${selectedCount})` : ""}</span>
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-4">
@@ -179,8 +263,16 @@ export default function ApprovalsPage() {
               key={item.id}
               className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-4 transition-all hover:border-slate-300"
             >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select application ${item.id}`}
+                    className="mt-1 size-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    checked={selectedIds.has(item.id)}
+                    onChange={() => toggleSelected(item.id)}
+                  />
+                  <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs text-slate-500 font-semibold">{item.id}</span>
                     <Badge variant="secondary" size="sm">
@@ -200,6 +292,7 @@ export default function ApprovalsPage() {
                     <span>•</span>
                     <FileText className="size-3.5 text-slate-400" />
                     <span>Resume: <code className="font-mono text-slate-700">{item.resume}</code></span>
+                  </div>
                   </div>
                 </div>
 
@@ -335,6 +428,56 @@ export default function ApprovalsPage() {
                 It will be permanently excluded from execution and dry-runs.
               </p>
             )}
+          </div>
+        </Dialog>
+      )}
+
+      {/* Batch Approval Confirmation Dialog (OI-1) */}
+      {isBatchDialogOpen && (
+        <Dialog
+          open={isBatchDialogOpen}
+          onClose={() => {
+            if (!isBatchSubmitting) setIsBatchDialogOpen(false)
+          }}
+          title="Confirm Batch Application Approval"
+          description={`${selectedCount} application${selectedCount === 1 ? "" : "s"} selected`}
+          footer={
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsBatchDialogOpen(false)}
+                disabled={isBatchSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleConfirmBatchApprove}
+                disabled={isBatchSubmitting}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isBatchSubmitting ? (
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="size-3.5 animate-spin" />
+                    <span>Processing...</span>
+                  </span>
+                ) : (
+                  `Confirm & Queue ${selectedCount} L0 Run${selectedCount === 1 ? "" : "s"}`
+                )}
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-3 text-xs text-slate-600">
+            <p>
+              Each selected application transitions individually from <strong className="text-slate-900">AWAITING_APPROVAL</strong> to <strong className="text-slate-900">READY</strong> through
+              the same per-application approval endpoint, safety barrier and ownership checks as a single approval.
+            </p>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-amber-900 text-xs">
+              <strong>Notice:</strong> Real submission gate is permanently locked disabled. Batch approval will NOT submit any form externally.
+            </div>
           </div>
         </Dialog>
       )}

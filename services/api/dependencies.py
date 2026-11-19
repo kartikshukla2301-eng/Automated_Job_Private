@@ -71,8 +71,30 @@ def verify_worker_token(
 
 
 def get_profile_source(app_settings: Settings = Depends(get_settings)) -> ProfileSource:
-    """Provide configured candidate ProfileSource."""
-    return LocalFileProfileSource(app_settings.profile.local_file_path)
+    """Provide configured candidate ProfileSource.
+
+    Uses DevLeveler only when `config/config.yaml` -> profile.source is explicitly set to
+    "devleveler" AND both devleveler_profile_url/devleveler_read_token are configured;
+    otherwise (or if either is missing) falls back to the local file source unchanged from
+    before. `DevLevelerProfileSource` itself already retries from cache and falls back to
+    this same local source on network/auth failure.
+    """
+    local_source = LocalFileProfileSource(app_settings.profile.local_file_path)
+
+    if (
+        app_settings.profile.source == "devleveler"
+        and app_settings.devleveler_profile_url
+        and app_settings.devleveler_read_token
+    ):
+        from worker.profile.devleveler import DevLevelerProfileSource
+
+        return DevLevelerProfileSource(
+            base_url=app_settings.devleveler_profile_url,
+            api_token=app_settings.devleveler_read_token,
+            fallback_source=local_source,
+        )
+
+    return local_source
 
 
 def get_kill_switch() -> KillSwitch:
@@ -125,18 +147,60 @@ def get_walking_skeleton_workflow(
 
 
 def get_llm_gateway(app_settings: Settings = Depends(get_settings)):
-    """Provide the managed single-process LLM Gateway instance."""
+    """Provide the managed single-process LLM Gateway instance.
+
+    Uses a Supabase-backed call ledger (durable, queryable: model, task, tokens, cost,
+    latency, cache status, outcome) when Supabase is configured, so every AI call is
+    recorded in the real database rather than only the local JSONL file. The managed
+    gateway is a singleton — this ledger choice only takes effect on the first call in
+    the process, exactly like its existing client/config/cache parameters.
+    """
     from worker.core.llm_gateway import get_managed_llm_gateway
 
-    return get_managed_llm_gateway()
+    ledger = None
+    if app_settings.supabase_url and app_settings.supabase_service_role_key:
+        from worker.persistence.llm_call_ledger import SupabaseLLMCallLedger
+
+        ledger = SupabaseLLMCallLedger(
+            base_url=app_settings.supabase_url,
+            api_key=app_settings.supabase_service_role_key,
+        )
+
+    return get_managed_llm_gateway(ledger=ledger)
 
 
 _application_repo = None
 _event_repo = None
+_supabase_client = None
 
 
-def get_application_repository():
-    """Provide singleton in-memory ApplicationRepository."""
+def get_supabase_client(app_settings: Settings = Depends(get_settings)):
+    """Provide a singleton SupabaseClient when real credentials are configured.
+
+    Returns None (never a client pointed at nothing) when `supabase_url` or
+    `supabase_service_role_key` are unset, so callers must explicitly fall back to
+    in-memory repositories rather than silently talking to a default/mock endpoint.
+    """
+    global _supabase_client
+    if not app_settings.supabase_url or not app_settings.supabase_service_role_key:
+        return None
+    if _supabase_client is None:
+        from worker.persistence.supabase_client import SupabaseClient
+
+        _supabase_client = SupabaseClient(
+            base_url=app_settings.supabase_url,
+            api_key=app_settings.supabase_service_role_key,
+        )
+    return _supabase_client
+
+
+def get_application_repository(supabase_client=Depends(get_supabase_client)):
+    """Provide ApplicationRepository: Supabase-backed when configured, else in-memory."""
+    if supabase_client is not None:
+        from worker.persistence.application_repository import SupabaseApplicationRepository
+
+        return SupabaseApplicationRepository(client=supabase_client)
+
     global _application_repo
     if _application_repo is None:
         from worker.application.repository import InMemoryApplicationRepository
@@ -145,8 +209,13 @@ def get_application_repository():
     return _application_repo
 
 
-def get_application_event_repository():
-    """Provide singleton in-memory ApplicationEventRepository."""
+def get_application_event_repository(supabase_client=Depends(get_supabase_client)):
+    """Provide ApplicationEventRepository: Supabase-backed when configured, else in-memory."""
+    if supabase_client is not None:
+        from worker.persistence.event_repository import SupabaseApplicationEventRepository
+
+        return SupabaseApplicationEventRepository(client=supabase_client)
+
     global _event_repo
     if _event_repo is None:
         from worker.application.repository import InMemoryApplicationEventRepository

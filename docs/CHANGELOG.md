@@ -1,5 +1,62 @@
 # Changelog
 
+## Phase 4.6 — Test Suite Removed (Owner Instruction)
+- At the owner's explicit, twice-confirmed request, deleted every backend test file
+  (`tests/test_*.py`, 60 files, 474 tests) and every frontend test file
+  (`*.test.ts`/`*.test.tsx` under `apps/web/src`, 11 files, 39 tests).
+- Before deleting, explained the consequence (loss of automated regression detection)
+  and asked for confirmation; the owner confirmed deletion across the whole repo, not
+  just the files added this session.
+- Verified the application itself still works without the test files: backend
+  `services.api.main.create_app()` still imports and constructs cleanly; frontend
+  `npx eslint .` (0 errors) and `npx next build` (all 17 routes) both still succeed.
+- `PROJECT_CONTEXT.md` updated with an explicit notice that all "N tests passing"
+  claims in this document predate this removal and can no longer be re-verified by
+  an automated suite.
+- No replacement testing strategy was requested; none was added.
+
+## Phase 4.4 — Live Supabase Provisioning & Nemotron/OpenRouter Model Routing
+- Owner provided a real Supabase project connection string. Ran `migrations/001_initial_schema.sql` and `002_performance_indexes.sql` against the live Postgres instance via a one-off script (deleted immediately after use, never committed) — confirmed all 13 architecture tables and RLS policies now exist live for the first time in this project's history.
+- Added `supabase_url`, `supabase_anon_key`, `supabase_service_role_key` fields to `Settings` (`services/api/config.py`).
+- Added `get_supabase_client()` to `services/api/dependencies.py` and rewired `get_application_repository()`/`get_application_event_repository()` to return `SupabaseApplicationRepository`/`SupabaseApplicationEventRepository` when both `supabase_url` and `supabase_service_role_key` are configured, otherwise unchanged in-memory singletons — fully backward compatible (every existing test overrides these dependencies directly via `app.dependency_overrides`, so no test needed to change). 465/465 backend tests still passing.
+- Set `config/config.yaml` → `llm.chains.unknown_question` to try free NVIDIA Nemotron models first (`nvidia/nemotron-3.5-lightning:free`, `nvidia/nemotron-3-super-120b-a12b:free`) ahead of the existing placeholder, and added `$0`/million pricing entries for both in `services/api/config.py`. Both route through the single existing `OpenRouterClient`/`LLMGateway` — no second LLM provider was introduced, preserving AD-003.
+- **Found and documented an existing gap** (not introduced by this change): `LLMGateway._resolve_model()` only ever dispatches to `chains[task][0]`; it does not yet automatically retry the 2nd/3rd configured model on failure. Listing a fallback model today documents intent only. Flagged in `tracker.md` (P4-08) as a candidate follow-up, structurally identical to the OI-7 local-fallback wrapper but pointed at a second remote model instead of local Ollama.
+- `.env` restructured: `SUPABASE_URL` now correctly holds the Supabase REST base URL (the app talks PostgREST, not raw libpq); the original Postgres DSN was preserved under a new `SUPABASE_DB_URL` key for future migration re-runs only. Added inline comments pointing to the exact Supabase/OpenRouter dashboard pages needed for the remaining two secrets.
+- Started both services locally: FastAPI (`uvicorn`, `http://127.0.0.1:8000`) and Next.js (`npm run dev`, `http://localhost:3000`, with `CI=true` to bypass an interactive Next.js 16 update-available prompt that otherwise blocks the dev server waiting for keyboard input).
+- Outstanding: the owner still needs to paste the real `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY` and `OPENROUTER_API_KEY` into `.env` directly (not in chat) before Supabase persistence and the Nemotron/OpenRouter LLM path are live at runtime.
+
+## Phase 4.3 — Local Small-Model (Ollama) Last-Resort LLM Fallback (OI-7)
+- Added `worker/core/local_llm_fallback.py`: `LocalOllamaClient` (same `complete()` tuple contract as `OpenRouterClient`: content, `LLMTokenUsage`, cost, cost provenance, pricing source) talking to a local `ollama serve` instance's `/api/chat` endpoint.
+- Added `execute_with_local_fallback(gateway, request, local_client, local_model=...)`: calls `LLMGateway.execute()` exactly as before and, only when that call already returned `degraded_mode=True` (daily budget exhausted, circuit breaker open, or provider error/timeout), attempts one local completion as a last resort. `worker/core/llm_gateway.py` was **not modified** — the locked routing/budget/circuit-breaker/cache pipeline is untouched; this is a pure wrapper callers can opt into.
+- Local fallback cost is always `$0.00` with `cost_provenance="reported"` (genuinely free local inference — never a fabricated stand-in for an unknown remote cost) and is recorded through the same `LLMCallLedger` with a distinct `LOCAL_FALLBACK_SUCCESS` outcome for full auditability.
+- If the local attempt is unconfigured or itself fails, the original degraded `LLMResponse` is returned unchanged — no new failure surface for existing callers.
+- Added 11 tests in `tests/test_local_llm_fallback.py` covering `LocalOllamaClient` parsing/error-mapping with a mocked transport (no real Ollama server required, mirroring the existing `OpenRouterClient` test pattern) and the wrapper's behavior across primary-success, provider-error, budget-exhausted, circuit-breaker-open, unconfigured, and double-failure scenarios.
+- 465/465 backend tests passing (454 + 11).
+
+## Phase 4.2 — Form Snapshot Persistence & Offline Fixture Replay (OI-2)
+- Added `worker/browser/form_snapshot.py`: `SanitizedFormField` and `FormSnapshot` models capturing only the *structure* of an inspected form (field ids, labels, types, required flag, options, taxonomy classification, policy) — never a candidate's resolved answers or audit metadata, matching the "Sanitised form DOM structure" intent of the `form_snapshots` table (Architecture Section 14).
+- Added `FileFormSnapshotRepository` (thread-safe, append-only JSONL per provider, stored under the gitignored `worker/sessions/form_snapshots/`) and `detect_drift()`, which replays a previously saved snapshot against a freshly parsed form and reports added/removed field ids and any structural hash change (including policy/classification changes on an unchanged field id).
+- Added 7 tests in `tests/test_form_snapshot_replay.py`: sanitization guarantee, order-independent hashing, save/replay round-trip across repository instances, multi-snapshot history, and three drift-detection scenarios (no drift, added/removed fields, silent policy weakening).
+- 454/454 backend tests passing (447 + 7).
+
+## Phase 4.1 — Weekly Automatic Backup of Answer Bank & Profile Snapshot (OI-8)
+- Added `worker/ops/backup_schedule.py`: `WeeklyBackupScheduler`, a persisted "is a backup due" check (same lightweight, testable pattern already used by `RunScheduler` — no new `apscheduler` dependency added) that delegates the actual bundling/checksum work to the existing `BackupManager` (Phase 2.6).
+- Scoped strictly to the Answer Bank and profile snapshot per OI-8's wording — `applications`/`events` are never accepted or included in this scheduled export; the broader operator-triggered backup continues to use `BackupManager.create_backup()` directly elsewhere.
+- Backup state (`last_backup_at`, `last_backup_id`, `total_backups_created`) and output files are stored under the gitignored `worker/sessions/backups/`. A missing/corrupt state file fails closed toward "due now" rather than silently skipping a backup.
+- Added 7 tests in `tests/test_weekly_backup_schedule.py` covering immediate due-on-first-run, interval enforcement, state persistence/reload, OI-8 scope (no applications/events), fail-closed corrupt-state handling, and input validation.
+- 447/447 backend tests passing (440 + 7).
+
+## Phase 4.0 — Backend Dev Environment Fix & One-Tap Batch Approval for the Approval Queue (OI-1)
+- Environment fix: this machine only had a broken pre-release Python 3.15 install (venv-bundled `pip` missing vendored `rich`/`pygments` submodules; no Microsoft C++ Build Tools, so `pyyaml`'s compiled extension could not build). Installed the official Python 3.13.16 Windows installer (per-user, into `%LOCALAPPDATA%\Programs\Python313`, not added to PATH), recreated `.venv` against it, installed `requirements.txt`, and installed Playwright Chromium. `pytest -q` now runs cleanly: 440/440 passed, confirming the previously-reported count on this machine for the first time this session.
+- Implemented locked architecture Optional Improvement OI-1 ("one-tap batch approval of the approval queue") in `apps/web/src/app/approvals/page.tsx`:
+  - Added a per-application selection checkbox, a "Select all" toolbar control showing the live selection count, and an "Approve Selected (N)" action that is disabled until at least one application is selected.
+  - Added a dedicated batch confirmation dialog ("Confirm Batch Application Approval") that states every selected application transitions individually through the same per-application approve endpoint, ownership checks and safety barrier as a single approval, and repeats the existing real-submit-gate-locked notice.
+  - Confirming the batch calls the existing `apiClient.approveApplication(id, notes)` once per selected application ID (`Promise.allSettled`), then removes the successfully-dispatched items from the queue — no new backend endpoint, and no change to `PolicyEngine`, `SafetyEngine`, caps, or the real-submit gate.
+  - The pre-existing single approve/reject flow (button labels, dialog copy, `approveApplication`/`rejectApplication` call signatures) is unchanged and remains covered by `apps/web/src/app/applications/applications.test.tsx` and `apps/web/src/app/e2e-workflow.test.tsx`.
+- Added `apps/web/src/app/approvals/approvals.test.tsx` with 5 new tests covering checkbox rendering, per-item selection count, select-all toggle (check/uncheck), batch confirmation dispatching one `approveApplication` call per selected id, and non-regression of the single-item approve/reject flow.
+- Verified: `npx vitest run` — 39/39 frontend tests passing (34 pre-existing + 5 new); `npx eslint .` — 0 errors/warnings; `npx next build` — clean production build across all 17 routes.
+- Environment note: the backend test suite (`pytest`, reported 440/440 at Phase 2.9/3.9) was **not** re-run in this session. This development machine only has a pre-release Python 3.15.2 install whose venv-bundled `pip` is broken (missing vendored `rich`/`pygments` submodules) and lacks Microsoft C++ Build Tools, so `pyyaml`'s compiled extension fails to build and the pinned Python 3.13 backend environment (`requirements.txt`) could not be installed here. No backend/worker code was changed in this phase. Re-run `pytest` on a Python 3.13 environment to re-confirm the 440 backend tests before relying on that count going forward.
+
 ## Phase 3.9 — Frontend & L0 Product Release
 - Completed the full production-ready documentation suite for the AI Job Application Agent frontend:
   - `docs/FRONTEND_GUIDE.md`: Comprehensive guide detailing architectural principles, Next.js 16.4.2 App Router conventions, Premium Light Theme design system tokens, 12 page routes, and API client contracts.
@@ -410,3 +467,4 @@
   - Exposed real stored overview metrics, conversion funnel stages (discovered, matched, eligible, ready, awaiting_approval, filling, dry_run_done), and provider health without value fabrication.
   - Created strongly typed TypeScript domain interfaces (`apps/web/src/types/api.ts`) and modern async API client (`apps/web/src/lib/api-client.ts`) with Bearer token authentication, correlation ID propagation, and standard error handling.
   - Expanded automated backend test suite from 415 to 417 passing tests (+2 comprehensive Phase 2.4 tests in `tests/test_dashboard_api.py`). All 2 frontend unit tests and ESLint checks passing.
+
